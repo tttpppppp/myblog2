@@ -15,16 +15,16 @@
                            class="flex items-center px-3 py-2 rounded-md transition hover:bg-gray-100
                        {% if category.slug == slug %}text-blue-600 font-semibold{% else %}text-gray-700{% endif %}">
                         <span class="mr-3">
-                           {% if category.name == "Công Nghệ" %}💻
-                           {% elif category.name == "Đời Sống" %}🌿
-                           {% elif category.name == "Du Lịch" %}✈️
-                           {% elif category.name == "Ẩm Thực" %}🍴
-                           {% elif category.name == "Giải Trí" %}🎮
-                           {% elif category.name == "Lập trình" %}💻
-                           {% elif category.name == "Văn hóa" %}📚
-                           {% elif category.name == "Âm nhạc" %}🎵
-                           {% else %}📁
-                           {% endif %}
+                       {% if category.name == "Công nghệ" %}🤖
+                       {% elif category.name == "Lập trình" %}🧑‍💻
+                       {% elif category.name == "Thể thao" %}🏅
+                       {% elif category.name == "Du lịch" %}✈️
+                       {% elif category.name == "Ẩm thực" %}🍴
+                       {% elif category.name == "Giải trí" %}🎮
+                       {% elif category.name == "Văn hóa" %}📚
+                       {% elif category.name == "Âm nhạc" %}🎵
+                       {% else %}📁
+                       {% endif %}
                         </span>
                             {{ category.name }}
                         </a>
