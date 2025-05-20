@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Trang mặc định{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
+    <link rel="icon" href="{{ url_for('static', filename='/images/logoicon.png') }}" type="image/x-icon" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body class="bg-gray-100">
+
+    <header class="bg-white shadow-md sticky top-0 z-40">
+    <div class="container mx-auto max-w-7xl px-4 py-4 grid grid-cols-12 items-center">
+        <!-- Logo (3 columns) -->
+        <div class="col-span-3 flex items-center">
+            <a href="/trangchu" class="flex items-center space-x-2 group">
+                <div class="flex items-center space-x-1 group">
+                    <!-- Icon bút -->
+                    <svg class="w-7 h-7 text-blue-600 group-hover:text-blue-400 transition duration-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              d="M16.862 3.487a2.25 2.25 0 013.182 3.182L7.5 19.213l-4 1 1-4L16.862 3.487z" />
+                    </svg>
+
+                    <!-- Tên blog với font viết tay và gradient -->
+                    <h1 class="text-2xl font-semibold font-[cursive] bg-gradient-to-r from-blue-800 to-pink-500 text-transparent bg-clip-text group-hover:from-blue-500 group-hover:to-pink-300 transition-all duration-300">
+                        MyBlog
+                    </h1>
+                </div>
+            </a>
+            <!-- Mobile menu toggle button -->
+            <button class="md:hidden ml-auto p-2" onclick="toggleMenu()">
+                <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Navigation Menu (6 columns) -->
+        <nav id="nav-menu" class="col-span-6 flex justify-center items-center space-x-4 text-base font-medium max-md:hidden max-md:absolute max-md:top-16 max-md:left-0 max-md:w-full max-md:bg-white max-md:shadow-md max-md:flex-col max-md:space-y-4 max-md:p-4">
+            {% for category in categories %}
+                <a href="/danhmuc/{{ category.slug }}" class="text-gray-600 hover:text-blue-700">{{ category.name }}</a>
+            {% endfor %}
+        </nav>
+
+        <!-- Actions (3 columns) -->
+        <div class="col-span-3 flex justify-end items-center space-x-4">
+            <button class="relative group">
+                <svg class="w-6 h-6 text-gray-600 group-hover:text-blue-700 transition duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
+            </button>
+            <a href="/taobaiviet"
+               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium text-base shadow-md hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg transition duration-300">
+                <!-- Icon + -->
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+                Tạo Bài Viết
+            </a>
+
+        </div>
+    </div>
+</header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@latest/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/socket.io@4.7.5/client-dist/socket.io.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/socket.io@4.7.5/client-dist/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+    <script src="{{ url_for('static', filename='create.js') }}"></script>
+    <script>
+        $(document).ready(function() {
+            $('.deletePost').click(function() {
+                const postId = $(this).data('postid');
+                Swal.fire({
+                    title: "Bạn có muốn xóa bài viết?",
+                    text: "Bài viết bạn chuyển vào mục lưu trữ và xóa sau 15 ngày!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Xóa bài viết"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: `/deletepost`,
+                            type: 'POST',
+                            contentType: "application/json",
+                            data: JSON.stringify({post_id: postId}),
+                            success: function(response) {
+                                Swal.fire(
+                                    'Xóa bài viết thành công',
+                                    'Your file has been deleted.',
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            },
+                            error: function() {
+                                Swal.fire(
+                                    'Error!',
+                                    'Có lỗi xảy ra khi xóa bài viết.',
+                                    'error'
+                                );
+                            }
+                        });
+                    }
+                });
+            });
+            $('#dangxuat').click(function() {
+                Swal.fire({
+                    title: "Bạn có muốn đăng xuất?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Đăng xuất"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: `/logout`,
+                            type: 'GET',
+                            success: function(response) {
+                              window.location.href = '/login';
+                            },
+                            error: function() {
+                                Swal.fire(
+                                    'Error!',
+                                    'Có lỗi xảy ra khi xóa bài viết.',
+                                    'error'
+                                );
+                            }
+                        });
+                    }
+                });
+            });
+            $('.khoiphucpost').click(function() {
+                const postId = $(this).data('postid');
+                Swal.fire({
+                    title: "Bạn có muốn khôi phục bài viết?",
+                    text: "",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Khôi phục bài viết"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: `/restore_post`,
+                            type: 'POST',
+                            contentType: "application/json",
+                            data: JSON.stringify({post_id: postId}),
+                            success: function(response) {
+                                Swal.fire(
+                                    'Khôi phục bài viết thành công',
+                                    '',
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            },
+                            error: function() {
+                                Swal.fire(
+                                    'Error!',
+                                    'Có lỗi xảy ra khi xóa bài viết.',
+                                    'error'
+                                );
+                            }
+                        });
+                    }
+                });
+            });
+            $('.deletepermanently').click(function() {
+                const postId = $(this).data('postid');
+                Swal.fire({
+                    title: "Bạn có muốn xóa bài viết?",
+                    text: "Bài viết của bạn sẽ xóa vĩnh viễn",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Xóa bài viết"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: `/delete_permanently`,
+                            type: 'POST',
+                            contentType: "application/json",
+                            data: JSON.stringify({post_id: postId}),
+                            success: function(response) {
+                                Swal.fire(
+                                    'Xóa bài viết thành công',
+                                    'Your file has been deleted.',
+                                    'success'
+                                ).then(() => {
+                                    location.reload();
+                                });
+                            },
+                            error: function() {
+                                Swal.fire(
+                                    'Error!',
+                                    'Có lỗi xảy ra khi xóa bài viết.',
+                                    'error'
+                                );
+                            }
+                        });
+                    }
+                });
+            });
+        });
+
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const submitComment = $("#submitComment");
+            const form = $("#comment-form");
+            const commentList = $("#comment-list");
+
+            submitComment.on("click", function (event) {
+                event.preventDefault();
+
+                const comment = $("#comment-content").val().trim();
+                const postId = $("#post-id").val();
+                const userId = $("#user-id").val() || null;
+
+                if (!comment) {
+                    alert("Vui lòng nhập nội dung bình luận.");
+                    return;
+                }
+
+                console.log("Gửi bình luận:", comment, postId, userId);
+
+                $.ajax({
+                    url: "{{ url_for('addComment') }}",
+                    method: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify({ comment: comment, post_id: postId, user_id: userId }),
+                    success: function (response) {
+                        console.log("Phản hồi server:", response);
+                        const newComment = $(`
+                        <div class="comment p-4 bg-gray-50 rounded-lg">
+                            <div class="flex items-center gap-3 mb-2">
+                                <img
+                                           src="{{ "/static/${response.avatar}" or "/static/images/avt" }}"
+                                            alt="User Avatar"
+                                            class="w-10 h-10 rounded-full object-cover"
+                                    />
+                                <div>
+                                    <p class="font-semibold text-gray-800">${response.user_name || 'Người dùng'}</p>
+                                    <p class="text-sm text-gray-500">${response.created_at || new Date().toLocaleDateString('vi-VN')}</p>
+                                </div>
+                            </div>
+                            <p class="text-gray-700">${response.comment}</p>
+                        </div>
+                    `);
+
+                        // Thêm comment mới lên đầu danh sách
+                        commentList.prepend(newComment);
+
+                        // Xóa nội dung input sau khi gửi
+                        $("#comment-content").val("");
+                    },
+                    error: function (xhr) {
+                        alert("Có lỗi xảy ra khi gửi bình luận: " + xhr.status);
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+        $(function() {
+            const $chatToggle = $('#chat-toggle');
+            const $chatDialog = $('#chat-dialog');
+            const $chatClose = $('#chat-close');
+            const $chatForm = $('#chat-form');
+            const $chatInput = $('#chat-input');
+            const $chatMessages = $('#chat-messages');
+            const currentUserName = "{{ session['user']['username'] if session.get('user') else '' }}";
+            const socket = io({
+                transports: ['websocket', 'polling']
+            });
+            function addMessage(user_name, content, timestamp, isOwnMessage = false, avatarUrl , userid) {
+                const $wrapper = $('<div>').addClass(`flex items-start gap-2 ${isOwnMessage ? 'justify-end' : 'justify-start'} mb-2`);
+
+                const $avatarLink = $('<a>').attr('href', `/blogger/${userid}`);
+                const $avatar = $('<div>')
+                    .addClass('w-8 h-8 rounded-full overflow-hidden flex-shrink-0');
+                const $img = $('<img>')
+                    .attr('src', avatarUrl)
+                    .addClass('w-full h-full object-cover');
+                $avatar.append($img);
+                $avatarLink.append($avatar);
+
+                const $msgDiv = $('<div>')
+                    .addClass(`p-3 rounded-lg max-w-[75%] text-sm ${isOwnMessage ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-800'}`)
+                    .html(`${content}<br><span class="text-xs opacity-75">${timestamp}</span>`);
+
+                if (isOwnMessage) {
+                    $wrapper.append($msgDiv).append($avatarLink);
+                } else {
+                    $wrapper.append($avatarLink).append($msgDiv);
+                }
+
+                $chatMessages.append($wrapper);
+                scrollToBottom();
+            }
+
+
+
+            function scrollToBottom() {
+                $chatMessages[0].scrollTop = $chatMessages[0].scrollHeight;
+            }
+
+            $chatToggle.on('click', function(e) {
+                e.stopPropagation();
+                $chatDialog.toggleClass('hidden');
+                if (!$chatDialog.hasClass('hidden')) {
+                    $chatInput.focus();
+                    $.ajax({
+                        url: '/messages',
+                        method: 'GET',
+                        dataType: 'json',
+                        success: function(messages) {
+                            $chatMessages.empty();
+                            messages.forEach(msg => {
+                                const isOwnMessage = msg.user_name === currentUserName;
+                                addMessage(msg.user_name, msg.content, msg.timestamp, isOwnMessage , `/static/${msg.image}` , msg.id);
+                            });
+                        },
+                        error: function() {
+                            alert('Không thể tải tin nhắn');
+                        }
+                    });
+
+                }
+            });
+
+            $chatClose.on('click', function() {
+                $chatDialog.addClass('hidden');
+            });
+
+            $(document).on('click', function(e) {
+                if (!$(e.target).closest($chatDialog).length && !$(e.target).closest($chatToggle).length) {
+                    $chatDialog.addClass('hidden');
+                }
+            });
+
+            $chatForm.on('submit', function(e) {
+                e.preventDefault();
+                const content = $chatInput.val().trim();
+                if (!content) return;
+
+                $.ajax({
+                    url: '/sendMessage',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ data: content }),
+                    success: function(res) {
+                        // Không cần xử lý ở đây vì socket.io sẽ nhận message mới
+                    },
+                    error: function(xhr) {
+                        const err = xhr.responseJSON && xhr.responseJSON.error ? xhr.responseJSON.error : 'Lỗi gửi tin nhắn';
+                        alert(err);
+                    }
+                });
+
+                $chatInput.val('');
+            });
+
+            socket.on('new_message', function(data) {
+                const isOwnMessage = data.user_name === currentUserName;
+                addMessage(data.user_name, data.content, data.timestamp, isOwnMessage , "/static/" + data.image);
+            });
+
+            $(document).on('keydown', function(e) {
+                if (e.key === 'Escape' && !$chatDialog.hasClass('hidden')) {
+                    $chatDialog.addClass('hidden');
+                }
+            });
+
+            socket.on('connect', () => console.log('Connected to Socket.IO server'));
+            socket.on('disconnect', () => console.log('Disconnected from Socket.IO server'));
+        });
+    </script>
+
+</body>
+</html>

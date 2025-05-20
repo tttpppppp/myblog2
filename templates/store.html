@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Kho lưu trữ{% endblock %}
+
+{% block content %}
+    <main
+            class="container mx-auto max-w-7xl px-4 py-6 grid grid-cols-1 md:grid-cols-12 gap-6"
+    >
+    <section
+            class="md:col-span-12 p-6 rounded-lg"
+    >
+        <h2 class="text-2xl font-bold text-gray-800 mb-6">Bài Viết đang chờ xóa</h2>
+        {% if posts|length > 0 %}
+            <div class="grid grid-cols-1 sm:grid-cols lg:grid-cols-3 gap-6">
+                {% for i in posts %}
+                    <div class="bg-white border rounded-lg shadow hover:shadow-lg transition overflow-hidden flex flex-col h-full">
+                        <div class="flex items-center justify-between px-4 py-2">
+                                <span class="flex items-center space-x-2 text-xs font-medium text-blue-600">
+                                    <i class="fa-solid fa-earth-americas"></i>
+                                    <span>
+                                        {% if i.status == 'draft' %}
+                                            Riêng tư
+                                        {% elif i.status == 'published' %}
+                                            Công khai
+                                        {% elif i.status == 'archived' %}
+                                            Archived
+                                        {% else %}
+                                            Unknown
+                                        {% endif %}
+                                    </span>
+                         <span class="flex items-center text-xs text-gray-600">
+                              <svg class="w-4 h-4 mr-1 text-red-500" fill="none" stroke="currentColor" stroke-width="2"
+                                   viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M12 6v6l4 2m6-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                              </svg>{{ (i.remaining_seconds // 86400) }} ngày
+                            </span>
+
+                                </span>
+                            <div class="relative">
+                                <button class="dropdown-toggle-store focus:outline-none" aria-label="Post options">
+                                    <i class="fa-solid fa-ellipsis"></i>
+                                </button>
+                                <div class="dropdown-menu-store hidden absolute right-0 mt-2 w-32 bg-white border rounded-lg shadow-lg z-10">
+                                    <button data-postid="{{ i.id }}" class="khoiphucpost block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Khôi phục</button>
+                                    <button data-postid="{{ i.id }}" class="deletepermanently block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Xóa bài viết</button>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="/baiviet/{{ i.slug }}" class="flex flex-col flex-1">
+                            <img src="{{ url_for('static', filename=i.thumbnail_url) }}"
+                                 class="w-full h-48 object-cover" />
+                            <div class="p-5 flex flex-col justify-between flex-1">
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2 hover:text-blue-600 transition">
+                                    {{ i.title }}
+                                </h3>
+                                <p class="text-gray-600 text-sm mb-3 line-clamp-2">
+                                    {{ i.description|safe }}
+                                </p>
+                                <div class="flex flex-wrap gap-2 mb-2">
+
+                                    {% for tag in i.tags %}
+                                        <span style="font-size: 10px" class="bg-blue-100 text-blue-800 font-semibold px-2.5 py-0.5 rounded mr-1 uppercase">
+                                        {{ tag.name }}
+                                      </span>
+                                    {% endfor %}
+
+                                </div>
+                                <div class="flex justify-between text-sm text-gray-500 mt-auto">
+                                    <span>{{ i.user.name }}</span>
+                                    <span>{{ i.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center text-gray-500 py-10 w-full">
+                Không có bài viết nào trong danh mục này.
+            </div>
+        {% endif %}
+    </section>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const toggles = document.querySelectorAll('.dropdown-toggle-store');
+            toggles.forEach(toggle => {
+                toggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const menu = toggle.nextElementSibling;
+                    document.querySelectorAll('.dropdown-menu-store').forEach(m => {
+                        if (m !== menu) m.classList.add('hidden');
+                    });
+                    menu.classList.toggle('hidden');
+                });
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.dropdown-toggle-store') && !e.target.closest('.dropdown-menu-store')) {
+                    document.querySelectorAll('.dropdown-menu-store').forEach(menu => {
+                        menu.classList.add('hidden');
+                    });
+                }
+            });
+        });
+    </script>
+{% endblock %}

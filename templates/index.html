@@ -1,0 +1,201 @@
+{% extends "base.html" %}
+
+{% block title %}MyBlog{% endblock %}
+
+{% block content %}
+    <main class="container mx-auto max-w-7xl px-4 py-6 grid grid-cols-1 md:grid-cols-12 gap-6">
+        <aside class="md:col-span-3 bg-white shadow-md p-6 rounded-lg sticky-sidebar">
+            <!-- Profile với hiệu ứng hover -->
+            {% if session['user'] %}
+                <a
+                        href="/blogger/{{ session['user']['id'] }}"
+                        class="flex items-center p-2 rounded-md hover:bg-gray-100 transition duration-200 cursor-pointer"
+                >
+                    {% if session.get('user') and session['user'].get('image_url') %}
+                        <img
+                                src="{{ url_for('static', filename= session['user']['image_url']) }}"
+                                alt="User Avatar"
+                                class="w-8 h-8 rounded-full mr-3"
+                        />
+                    {% else %}
+                        <img
+                                src="{{ url_for('static', filename='images/avt.jpg') }}"
+                                alt="User Avatar"
+                                class="w-8 h-8 rounded-full mr-3"
+                        />
+                    {% endif %}
+                    <span class="text-sm font-semibold text-gray-500">{{ session['user']['username'] }}</span>
+                </a>
+            {% endif %}
+            <ul class="space-y-3 text-base">
+                <li>
+                    <a href="/kholuutru" class="flex items-center p-2 text-gray-600 hover:bg-gray-100 rounded-md">
+                        ⏳ Kho lưu trữ bài viết</a>
+                </li>
+                <li>
+                    <a href="#" class="flex items-center p-2 text-gray-600 hover:bg-gray-100 rounded-md">
+                        🕒 Lịch sử xem</a>
+                </li>
+                <li>
+                    <button type="button" id="dangxuat"  class="flex items-center p-2 text-gray-600 hover:bg-gray-100 rounded-md w-full">
+                        ⚙️ Đăng xuất</button>
+                </li>
+            </ul>
+        </aside>
+
+        <section class="md:col-span-6 min-w-0 space-y-6">
+            <div class="flex flex-col items-center justify-center gap-5">
+                {% for i in posts %}
+                    <a href="/baiviet/{{ i.slug }}">
+                        <article class="bg-white border rounded-lg shadow hover:shadow-lg transition overflow-hidden flex flex-col h-full">
+                            <img src="{{ url_for('static', filename= i.thumbnail_url)}}"
+                                 class="w-full h-48 object-cover object-center" />
+                            <div class="p-5 flex flex-col justify-between flex-1">
+                               <span class="flex items-center space-x-2 text-xs font-medium text-blue-600">
+                                  <i class="fa-solid fa-earth-americas"></i>
+                                  <span>
+                                    {{ "Công khai" if i.status == "published" else "" }}
+                                  </span>
+                                </span>
+                                <h3 class="text-lg font-semibold text-gray-800 mb-2 hover:text-blue-600 transition">
+                                    {{ i.title }}
+                                </h3>
+                                <p class="text-gray-600 text-sm mb-1 line-clamp-2">
+                                    {{ i.description|safe }}
+                                </p>
+                                <div class="flex flex-wrap gap-2 mb-2">
+                                    {% for tag in i.tags %}
+                                        <span style="font-size: 10px" class="bg-blue-100 text-blue-800 font-semibold px-2.5 py-0.5 rounded mr-1 uppercase">
+                                        {{ tag.name }}
+                                      </span>
+                                    {% endfor %}
+                                </div>
+                                <div class="flex justify-between text-sm text-gray-500 mt-auto">
+                                    <span>{{ i.user.name }}</span>
+                                    <span>{{ i.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                                </div>
+                            </div>
+                        </article>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+
+        <aside class="md:col-span-3 bg-white shadow-md p-6 rounded-lg sticky-sidebar">
+            <div class="mb-6">
+                <h3 class="text-lg font-semibold text-gray-800">
+                    Bài Viết Nổi Bật
+                </h3>
+                <ul class="space-y-3">
+                    {% for i in postsView %}
+                        <li>
+                            <a
+                                    href="/baiviet/{{ i.slug }}"
+                                    class="text-blue-700 hover:text-blue-800 hover:underline transition duration-200 text-sm"
+                            >{{ i.title }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-800">
+                    Bài Viết Mới Nhất
+                </h3>
+                <ul class="space-y-3">
+                    {% for i in posts[:3] %}
+                        <li>
+                            <a
+                                    href="/baiviet/{{ i.slug }}"
+                                    class="text-blue-700 hover:text-blue-800 hover:underline transition duration-200 text-sm"
+                            >{{ i.title }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="mt-6">
+                <h3 class="text-lg font-semibold text-gray-800">
+                    Thời tiết hôm nay
+                </h3>
+                <div class="weather-widget mt-1 text-center">
+                    <p class="text-sm" id="weather-info">Đang tải...</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Chat Button -->
+        <button id="chat-toggle"
+                class="fixed bottom-6 right-6 w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-indigo-600 text-white text-2xl shadow-xl hover:from-blue-700 hover:to-indigo-700 hover:scale-105 transition-all duration-300 ease-in-out z-50"
+                aria-label="Mở hộp thoại chat">
+            <i class="fa-brands fa-rocketchat"></i>
+        </button>
+
+
+        <!-- Chat Dialog -->
+        <div id="chat-dialog" class="fixed hidden bottom-20 right-6 w-96 bg-white rounded-lg shadow-xl flex flex-col min-h-[500px] max-h-[500px] z-50" role="dialog" aria-labelledby="chat-title">
+            <div class="bg-blue-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+                <h3 id="chat-title" class="text-sm font-semibold">Trò chuyện với mọi người</h3>
+                <button id="chat-close" class="text-white hover:text-gray-200" aria-label="Đóng hộp thoại chat">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50 max-h-[calc(100%-120px)]"></div>
+            <form id="chat-form" class="p-4 border-t border-gray-200 bg-white rounded-lg">
+                <div class="flex space-x-2 relative">
+                    <button
+                            type="button"
+                            id="emoji-toggle"
+                            class="p-2 text-gray-600 hover:text-blue-600"
+                            aria-label="Mở bảng chọn emoji"
+                    >
+                        <i class="fas fa-smile"></i> <!-- Icon mặt cười từ Font Awesome -->
+                    </button>
+                    <input
+                            type="text"
+                            id="chat-input"
+                            placeholder="Nhập tin nhắn..."
+                            class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            required
+                    />
+                    <button
+                            type="submit"
+                            class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition duration-200"
+                            aria-label="Gửi tin nhắn"
+                    >
+                        Gửi
+                    </button>
+                    <!-- Container cho emoji picker -->
+                    <div id="emoji-picker-container" class="absolute hidden z-10 top-[-400px] left-0">
+                        <emoji-picker></emoji-picker>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // Lấy các phần tử
+        const emojiToggle = document.getElementById('emoji-toggle');
+        const emojiPickerContainer = document.getElementById('emoji-picker-container');
+        const chatInput = document.getElementById('chat-input');
+
+        // Hiển thị/ẩn emoji picker
+        emojiToggle.addEventListener('click', () => {
+            emojiPickerContainer.classList.toggle('hidden');
+        });
+
+        // Xử lý khi chọn emoji
+        const picker = document.querySelector('emoji-picker');
+        picker.addEventListener('emoji-click', (event) => {
+            chatInput.value += event.detail.unicode; // Chèn emoji vào ô input
+            emojiPickerContainer.classList.add('hidden'); // Ẩn picker sau khi chọn
+            chatInput.focus(); // Đưa con trỏ về ô input
+        });
+
+        // Ẩn picker khi nhấp ra ngoài
+        document.addEventListener('click', (event) => {
+            if (!emojiPickerContainer.contains(event.target) && !emojiToggle.contains(event.target)) {
+                emojiPickerContainer.classList.add('hidden');
+            }
+        });
+    </script>
+{% endblock %}

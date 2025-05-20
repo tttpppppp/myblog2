@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <link rel="icon" href="{{ url_for('static', filename='/images/logoicon.png') }}" type="image/x-icon" />
+    <title>MyBlog - Khám Phá Thế Giới Kiến Thức</title>
+    <meta
+      name="description"
+      content="MyBlog - Khám phá kiến thức về công nghệ, du lịch, ẩm thực và hơn thế nữa. Đăng nhập để tham gia ngay!"
+    />
+    <meta
+      name="keywords"
+      content="blog, công nghệ, du lịch, ẩm thực, đời sống, đăng nhập"
+    />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Roboto,
+          sans-serif;
+      }
+      .hero-bg {
+        position: relative;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+      }
+      .hero-bg video {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -1;
+      }
+      .hero-bg::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          to bottom,
+          rgba(0, 0, 0, 0.4),
+          rgba(0, 0, 0, 0.6)
+        );
+        z-index: -1;
+      }
+      .cta-button:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      }
+      .feature-card {
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+      .feature-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      }
+      @media (max-width: 768px) {
+        .hero-bg video {
+          object-fit: cover;
+        }
+        .hero-bg h1 {
+          font-size: 2.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body class="bg-gray-100">
+    <!-- Hero Section with Local Video Background -->
+    <section class="hero-bg">
+      <video autoplay muted loop playsinline>
+        <source src="{{ url_for('static', filename='videos/sea.mp4') }}" type="video/mp4" />
+        <source src="{{ url_for('static', filename='videos/sea.mp4') }}" type="video/webm" />
+        Your browser does not support the video tag.
+      </video>
+      <div class="container mx-auto max-w-7xl px-4 text-center text-white">
+        <h1 class="text-4xl md:text-6xl font-bold mb-6 animate-fade-in">
+          Chào Mừng Đến Với MyBlog
+        </h1>
+        <p class="text-lg md:text-xl text-gray-200 mb-8 max-w-2xl mx-auto">
+          Khám phá thế giới kiến thức với các bài viết về công nghệ, du lịch, ẩm
+          thực, đời sống và hơn thế nữa!
+        </p>
+        <a
+          href="/login"
+          class="cta-button inline-flex items-center bg-gradient-to-r from-blue-600 to-blue-800 text-white text-lg font-semibold px-8 py-3 rounded-full hover:from-blue-700 hover:to-blue-900 transition duration-300 ease-in-out"
+        >
+          <svg
+            class="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M11 16l-4-4m0 0l4-4m-4 4h14"
+            />
+          </svg>
+          Đăng Nhập Ngay
+        </a>
+      </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-16 bg-white">
+      <div class="container mx-auto max-w-7xl px-4">
+        <h2 class="text-3xl font-bold text-gray-800 text-center mb-12">
+          Tại Sao Chọn MyBlog?
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div
+            class="feature-card bg-gray-50 p-6 rounded-lg shadow-md text-center"
+          >
+            <svg
+              class="w-12 h-12 mx-auto mb-4 text-blue-700"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">
+              Nội Dung Chất Lượng
+            </h3>
+            <p class="text-gray-600">
+              Bài viết được tuyển chọn kỹ lưỡng, mang đến thông tin hữu ích và
+              đáng tin cậy.
+            </p>
+          </div>
+          <div
+            class="feature-card bg-gray-50 p-6 rounded-lg shadow-md text-center"
+          >
+            <svg
+              class="w-12 h-12 mx-auto mb-4 text-blue-700"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l4-4h3.414m-3.414 0A2 2 0 0010.586 12H5"
+              />
+            </svg>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">
+              Cộng Đồng Sôi Động
+            </h3>
+            <p class="text-gray-600">
+              Tham gia thảo luận, chia sẻ ý kiến và kết nối với những người cùng
+              sở thích.
+            </p>
+          </div>
+          <div
+            class="feature-card bg-gray-50 p-6 rounded-lg shadow-md text-center"
+          >
+            <svg
+              class="w-12 h-12 mx-auto mb-4 text-blue-700"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">
+              Tạo Bài Viết Dễ Dàng
+            </h3>
+            <p class="text-gray-600">
+              Chia sẻ câu chuyện của bạn với giao diện thân thiện và dễ sử dụng.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section
+      class="py-16 bg-gradient-to-r from-blue-700 to-blue-900 text-white"
+    >
+      <div class="container mx-auto max-w-7xl px-4 text-center">
+        <h2 class="text-3xl font-bold mb-6">Sẵn Sàng Khám Phá?</h2>
+        <p class="text-lg text-gray-200 mb-8 max-w-xl mx-auto">
+          Đăng nhập ngay để trải nghiệm hàng trăm bài viết thú vị và chia sẻ câu
+          chuyện của riêng bạn!
+        </p>
+        <a
+          href="/login"
+          class="inline-flex items-center bg-white text-blue-700 text-lg font-semibold px-8 py-3 rounded-full hover:bg-gray-100 transition duration-300 ease-in-out"
+        >
+          <svg
+            class="w-5 h-5 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M11 16l-4-4m0 0l4-4m-4 4h14"
+            />
+          </svg>
+          Đăng Nhập Ngay
+        </a>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+      <div class="container mx-auto max-w-7xl px-4 text-center">
+        <h3 class="text-xl font-semibold mb-4">MyBlog</h3>
+        <div class="flex justify-center space-x-4 mb-4">
+          <a
+            href="#"
+            class="text-gray-400 hover:text-white transition duration-200"
+          >
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"
+              />
+            </svg>
+          </a>
+          <a
+            href="#"
+            class="text-gray-400 hover:text-white transition duration-200"
+          >
+            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"
+              />
+            </svg>
+          </a>
+        </div>
+        <p class="text-gray-400 text-sm">
+          © 2025 MyBlog. All rights reserved.
+        </p>
+      </div>
+    </footer>
+
+    <script>
+      // Animation for fade-in effect
+      document.addEventListener("DOMContentLoaded", () => {
+        document.querySelectorAll(".animate-fade-in").forEach((el) => {
+          el.classList.add("opacity-0");
+          setTimeout(() => {
+            el.classList.remove("opacity-0");
+            el.classList.add("opacity-100", "transition", "duration-1000");
+          }, 100);
+        });
+      });
+    </script>
+  </body>
+</html>

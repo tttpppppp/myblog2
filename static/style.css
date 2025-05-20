@@ -1,0 +1,29 @@
+.sticky-sidebar {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 100px; /* Offset for header height + padding */
+  height: fit-content;
+  max-height: calc(100vh - 120px); /* Prevent overflow */
+  overflow-y: auto;
+}
+@media (max-width: 767px) {
+  .sticky-sidebar {
+    position: static;
+    top: 0;
+    max-height: none;
+  }
+}
+.posts-container {
+  background-color: #ffffff !important; /* Đảm bảo nền trắng */
+}
+.sticky-sidebar {
+  position: -webkit-sticky;
+  position: sticky;
+  top: 100px;
+  height: fit-content;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+article {
+  width: 490px;
+}

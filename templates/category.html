@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}{{ category.name }}{% endblock %}
+
+{% block content %}
+    <main class="container mx-auto max-w-7xl px-4 py-8 grid grid-cols-1 md:grid-cols-12 gap-8">
+
+        <!-- Sidebar -->
+        <aside class="md:col-span-3 bg-white shadow p-6 rounded-lg h-fit sticky top-6">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4">Danh Mục</h3>
+            <ul class="space-y-2 text-base">
+                {% for category in categories %}
+                    <li>
+                        <a href="/danhmuc/{{ category.slug }}"
+                           class="flex items-center px-3 py-2 rounded-md transition hover:bg-gray-100
+                       {% if category.slug == slug %}text-blue-600 font-semibold{% else %}text-gray-700{% endif %}">
+                        <span class="mr-3">
+                           {% if category.name == "Công Nghệ" %}💻
+                           {% elif category.name == "Đời Sống" %}🌿
+                           {% elif category.name == "Du Lịch" %}✈️
+                           {% elif category.name == "Ẩm Thực" %}🍴
+                           {% elif category.name == "Giải Trí" %}🎮
+                           {% elif category.name == "Lập trình" %}💻
+                           {% elif category.name == "Văn hóa" %}📚
+                           {% elif category.name == "Âm nhạc" %}🎵
+                           {% else %}📁
+                           {% endif %}
+                        </span>
+                            {{ category.name }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </aside>
+
+        <!-- Main Content -->
+        <section class="md:col-span-9">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-2">{{ category.name }}</h2>
+
+            <!-- Posts Grid -->
+            {% if posts|length > 0 %}
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+                    {% for i in posts %}
+                        <a href="/baiviet/{{ i.slug }}">
+                            <div class="bg-white border rounded-lg shadow hover:shadow-lg transition overflow-hidden flex flex-col h-full">
+                                <img src="{{ url_for('static', filename= i.thumbnail_url)}}"
+                                     class="w-full h-48 object-cover" />
+                                <div class="p-5 flex flex-col justify-between flex-1">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-2 hover:text-blue-600 transition">
+                                        {{ i.title }}
+                                    </h3>
+                                    <p class="text-gray-600 text-sm mb-3 line-clamp-2">
+                                        {{ i.description|safe }}
+                                    </p>
+                                    <div class="flex flex-wrap gap-2 mb-2">
+
+                                        {% for tag in i.tags %}
+                                            <span style="font-size: 10px" class="bg-blue-100 text-blue-800 font-semibold px-2.5 py-0.5 rounded mr-1 uppercase">
+                                        {{ tag.name }}
+                                      </span>
+                                        {% endfor %}
+
+                                    </div>
+                                    <div class="flex justify-between text-sm text-gray-500 mt-auto">
+                                        <span>{{ i.user.name if i.user else 'Unknown author' }}</span>
+                                        <span>{{ i.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+                <div class="flex justify-center mt-8">
+                    <button id="load-more"
+                            class="bg-blue-700 text-white font-medium px-6 py-2 rounded-full hover:bg-blue-800 transition">
+                        Tải Thêm
+                    </button>
+                </div>
+            {% else %}
+                <div class="text-center text-gray-500 py-10">
+                    Không có bài viết nào trong danh mục này.
+                </div>
+            {% endif %}
+
+
+
+        </section>
+    </main>
+{% endblock %}
