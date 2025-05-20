@@ -489,8 +489,6 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         print("Database Created")
-    socketio.run(app, debug=True)
     scheduler.add_job(id='Cleanup posts', func=hard_delete_old_posts, trigger='interval', days=1)
-
-    # port = int(os.environ.get('PORT', 5000))
-    # socketio.run(app, debug=True, host='0.0.0.0', port=port)
+    port = int(os.environ.get('PORT', 5000))
+    socketio.run(app, debug=True, host='0.0.0.0', port=port)
