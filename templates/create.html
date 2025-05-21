@@ -49,17 +49,31 @@
                     </select>
                 </div>
 
+
                 <!-- Hình ảnh -->
                 <div>
+                    <div id="image-preview" class="mt-2 hidden">
+                        <img src="" alt="Image Preview" class="w-[100px] h-auto rounded-md">
+                    </div><div id="image-preview" class="mt-2 hidden">
+                    <img src="" alt="Image Preview" class="max-w-full h-auto rounded-md">
+                </div>
                     <label for="post-image" class="block mb-1 text-gray-700 font-semibold">Hình ảnh bài viết</label>
-                    <input
-                            type="file"
-                            id="post-image"
-                            name="image"
-                            accept="image/*"
-                            class="w-full text-gray-600 rounded-md"
-                            required
-                    />
+                    <div class="relative border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-blue-500 transition duration-200">
+                        <input
+                                type="file"
+                                id="post-image"
+                                name="image"
+                                accept="image/*"
+                                class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                        />
+                        <div class="flex flex-col items-center justify-center">
+                            <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V8m0 0l-3 3m3-3l3 3m-6 6h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                            <p class="text-sm text-gray-600">Kéo và thả hình ảnh hoặc <span class="text-blue-600 hover:underline">chọn tệp</span></p>
+                            <p class="text-xs text-gray-400 mt-1">Hỗ trợ: PNG, JPG, JPEG, GIF (Tối đa 10MB)</p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Mô tả -->
@@ -109,7 +123,4 @@
             </form>
         </div>
     </main>
-
-
-
 {% endblock %}

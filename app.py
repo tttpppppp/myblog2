@@ -531,7 +531,10 @@ def get_messages():
             'timestamp': msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         })
     return jsonify(result)
-
+@app.route("/taokhampha" , methods=['GET' , 'POST'])
+def taokhampha():
+    if request.method == "GET":
+        return render_template("khamphacreate.html")
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('PageNotFound.html'), 404
