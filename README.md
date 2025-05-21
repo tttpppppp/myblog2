@@ -7,9 +7,17 @@ Một nền tảng blog cá nhân được xây dựng bằng **Flask**, sử d�
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/6400300c-84cb-4b12-8060-793648f46d1f" width="45%" />
-  <img src="https://github.com/user-attachments/assets/d36f4e4c-2d08-426f-8042-cb885bb8aac3" width="45%" />
+  <img src="![image](https://github.com/user-attachments/assets/8f099987-da62-4e66-87d8-cae7b4449fe3)
+" width="45%" />
 </p>
 
+<p align="center">
+  <img src="![image](https://github.com/user-attachments/assets/17fb094b-13c1-4266-84c7-1151128b2247)
+" width="45%" />
+  <img src="![image](![image](https://github.com/user-attachments/assets/a0e44ae2-abe1-4546-987f-efd00a53e5d8)
+)
+" width="45%" />
+</p>
 
 ## 🌟 Tính năng chính
 
