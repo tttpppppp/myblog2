@@ -150,9 +150,6 @@ def inject_categories():
     user_id = user_session['id']
     notifications = Notification.query.filter_by(user_id=user_id).order_by(Notification.created_at.desc()).limit(5).all()
     return dict(categories=categories ,notifications = notifications)
-@app.route('/static/uploads/<filename>')
-def serve_image(filename):
-    return send_file(f'static/uploads/{filename}', mimetype='image/jpeg')
 @app.route('/' , methods=['GET'])
 def index():
     return render_template("hub.html")
