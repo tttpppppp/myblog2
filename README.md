@@ -12,7 +12,7 @@ Một nền tảng blog cá nhân được xây dựng bằng **Flask**, sử d�
 </p>
 
 <p align="center">
-  <img src="![image](https://github.com/user-attachments/assets/17fb094b-13c1-4266-84c7-1151128b2247)
+  <img src="https://github.com/user-attachments/assets/17fb094b-13c1-4266-84c7-1151128b2247"
 " width="45%" />
   <img src="![image](![image](https://github.com/user-attachments/assets/a0e44ae2-abe1-4546-987f-efd00a53e5d8)
 )
