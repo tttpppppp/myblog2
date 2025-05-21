@@ -355,7 +355,7 @@ def editPost(slug):
         filename = secure_filename(image.filename)
         filepath = os.path.join('static/uploads', filename)
         image.save(filepath)
-        post.image_url = 'uploads/' + filename
+        post.thumbnail_url = 'uploads/' + filename
 
     db.session.commit()
     return redirect(url_for('post', slug=post.slug))
