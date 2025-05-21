@@ -2,6 +2,11 @@
 
 Một nền tảng blog cá nhân được xây dựng bằng **Flask**, sử dụng **PostgreSQL** làm hệ quản trị cơ sở dữ liệu, hỗ trợ **SocketIO** để mở rộng khả năng real-time, bảo mật bằng **bcrypt**, và tích hợp **APScheduler** để thực thi các tác vụ định kỳ.
 
+🌐 **Truy cập ngay tại:**  
+👉 [https://myblog2-400d.onrender.com](https://myblog2-400d.onrender.com)
+
+![Blog Python](https://myblog2-400d.onrender.com/static/images/posts/python-cover.png)
+
 ## 🌟 Tính năng chính
 
 - ✅ Đăng ký / Đăng nhập với mật khẩu mã hóa bằng bcrypt
