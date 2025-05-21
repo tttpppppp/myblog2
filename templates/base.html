@@ -5,7 +5,7 @@
     <title>{% block title %}Trang mặc định{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-    <link rel="icon" href="https://myblog2-400d.onrender.com/static/images/logoicon.png" />
+     <link rel="icon" href="https://myblog2-400d.onrender.com/static/images/logoicon.png" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 </head>
 <body class="bg-gray-100">
@@ -45,26 +45,50 @@
 
         <!-- Actions (3 columns) -->
         <div class="col-span-3 flex justify-end items-center space-x-4">
-            <button class="relative group">
-                <svg class="w-6 h-6 text-gray-600 group-hover:text-blue-700 transition duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>
-            </button>
+            <!-- Notification Dropdown -->
+            <div class="relative group">
+                <button class="relative focus:outline-none" onclick="toggleNotificationDropdown()">
+                    <svg class="w-6 h-6 text-gray-600 group-hover:text-blue-700 transition duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                    </svg>
+{#                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>#}
+                </button>
+                <!-- Notification Dropdown Content -->
+                <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-[400px] bg-white rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                    <div class="p-4 border-b">
+                        <h3 class="text-sm font-semibold text-gray-800">Thông báo</h3>
+                    </div>
+                    <dic class="divide-y" id="notiform">
+                        {% for noti in notifications %}
+                            <a class="p-4 hover:bg-gray-100 cursor-pointer block">
+                                <p class="text-sm text-gray-700">{{ noti.content }}</p>
+                                <span class="text-xs text-gray-500">{{ noti.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
+                            </a>
+                        {% else %}
+                            <li class="p-4 text-sm text-gray-500">Không có thông báo nào.</li>
+                        {% endfor %}
+                    </dic>
+
+                    <div class="p-4 border-t">
+                        <a href="/thongbao" class="text-sm text-blue-600 hover:underline">Xem tất cả thông báo</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Create Post Button -->
             <a href="/taobaiviet"
                class="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-medium text-base shadow-md hover:from-blue-700 hover:to-indigo-700 hover:shadow-lg transition duration-300">
-                <!-- Icon + -->
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
                 </svg>
                 Tạo Bài Viết
             </a>
-
         </div>
     </div>
 </header>
     <main>
         {% block content %}{% endblock %}
+        <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3"></div>
     </main>
     <script src="https://cdn.tailwindcss.com"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@latest/index.js"></script>
@@ -285,6 +309,7 @@
             const $chatInput = $('#chat-input');
             const $chatMessages = $('#chat-messages');
             const currentUserName = "{{ session['user']['username'] if session.get('user') else '' }}";
+            const currentUserId = "{{ session['user']['id'] }}";
             const socket = io({
                 transports: ['websocket', 'polling']
             });
@@ -313,8 +338,6 @@
                 $chatMessages.append($wrapper);
                 scrollToBottom();
             }
-
-
 
             function scrollToBottom() {
                 $chatMessages[0].scrollTop = $chatMessages[0].scrollHeight;
@@ -381,6 +404,36 @@
                 addMessage(data.user_name, data.content, data.timestamp, isOwnMessage , "/static/" + data.image);
             });
 
+            function showToast(message, icon = "🔔") {
+                const toast = document.createElement("div");
+                toast.className = "max-w-xs w-full bg-white shadow-lg rounded-lg pointer-events-auto ring-1 ring-black ring-opacity-5 p-4 flex items-start gap-4 animate-slide-in";
+                toast.innerHTML = `
+                            <div class="text-2xl">${icon}</div>
+                            <div class="flex-1 text-sm text-gray-900">${message}</div>
+                            <button onclick="this.parentElement.remove()" class="text-gray-400 hover:text-gray-600">&times;</button>
+                        `;
+
+                document.getElementById("toast-container").appendChild(toast);
+                setTimeout(() => {
+                    toast.remove();
+                }, 4000);
+            }
+            socket.on('connect', () => {
+                socket.emit('join', currentUserId);
+            });
+            socket.on('new_notification', function(data) {
+                showToast(data.content);
+                const notiHTML = `
+                  <a href="${data.post_url}" class="hover:bg-gray-100 cursor-pointer block p-4 bg-gray-200">
+                      <p class="text-sm text-gray-700">${data.content}</p>
+                      <span class="text-xs text-gray-500">${data.timestamp}</span>
+                    </a>
+                    `;
+
+                document.getElementById("notiform").insertAdjacentHTML("afterbegin", notiHTML);
+            });
+
+
             $(document).on('keydown', function(e) {
                 if (e.key === 'Escape' && !$chatDialog.hasClass('hidden')) {
                     $chatDialog.addClass('hidden');
@@ -389,6 +442,21 @@
 
             socket.on('connect', () => console.log('Connected to Socket.IO server'));
             socket.on('disconnect', () => console.log('Disconnected from Socket.IO server'));
+        });
+    </script>
+    <script>
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notification-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            const dropdown = document.getElementById('notification-dropdown');
+            const button = document.querySelector('[onclick="toggleNotificationDropdown()"]');
+            if (!dropdown.contains(event.target) && !button.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
         });
     </script>
 

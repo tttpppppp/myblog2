@@ -1,7 +1,7 @@
 import uuid
 from datetime import date, datetime, timedelta, UTC
 from flask_apscheduler import APScheduler
-from flask_socketio import SocketIO
+from flask_socketio import SocketIO, join_room
 from pytz import timezone
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort
 from flask_sqlalchemy import SQLAlchemy
@@ -35,6 +35,8 @@ class User(db.Model):
     posts = db.relationship('Post', backref='user', lazy=True)
     comments = db.relationship('Comment', backref='user', lazy=True)
     messages = db.relationship('Message', back_populates='user', lazy='dynamic')
+    notifications = db.relationship('Notification', back_populates='user', lazy='dynamic')
+
 
 class Category(db.Model):
     __tablename__ = 'categories'
@@ -101,6 +103,35 @@ class Message(db.Model):
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship('User', back_populates='messages')
 
+class Notification(db.Model):
+    __tablename__ = 'notifications'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    is_read = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', back_populates='notifications')
+
+
+def create_default_categories():
+    with app.app_context():
+        if not Category.query.first():
+            categories = [
+                Category(name='Công nghệ', slug='cong-nghe'),
+                Category(name='Đời sống', slug='doi-song'),
+                Category(name='Thể thao', slug='the-thao'),
+                Category(name='Du lịch', slug='du-lich'),
+                Category(name='Ẩm thực', slug='am-thuc'),
+                Category(name='Giải trí', slug='giai-tri'),
+                Category(name='Lập trình', slug='lap-trinh'),
+                Category(name='Văn hóa', slug='van-hoa'),
+                Category(name='Âm nhạc', slug='am-nhac'),
+            ]
+            db.session.bulk_save_objects(categories)
+            db.session.commit()
+            print("✅ Danh mục mẫu đã được tạo.")
 
 def deniUrl():
     if session.get('user') is not None:
@@ -113,7 +144,12 @@ def protectedUrl():
 @app.context_processor
 def inject_categories():
     categories = Category.query.all()
-    return dict(categories=categories)
+    user_session = session.get('user')
+    if not user_session:
+        return dict(categories=categories, notifications=[])
+    user_id = user_session['id']
+    notifications = Notification.query.filter_by(user_id=user_id).order_by(Notification.created_at.desc()).limit(5).all()
+    return dict(categories=categories ,notifications = notifications)
 @app.route('/' , methods=['GET'])
 def index():
     return render_template("hub.html")
@@ -357,6 +393,11 @@ def edit_blogger(id):
     db.session.commit()
     return redirect(url_for('blogger', id=id))
 
+@socketio.on('join')
+def handle_join(user_id):
+    join_room(str(user_id))
+    print(f"User {user_id} joined room.")
+
 @app.route('/addComment', methods=['POST'])
 def addComment():
     data = request.get_json()
@@ -365,6 +406,8 @@ def addComment():
 
     user_id = session.get('user')['id']
     user = User.query.filter_by(id=user_id).first_or_404()
+    post = Post.query.filter_by(id=post_id).first_or_404()
+    post_owner = post.user
 
     new_comment = Comment(
         content=comment_text,
@@ -372,8 +415,20 @@ def addComment():
         user_id=user_id,
     )
 
+    notification_content = f"{user.name} vừa bình luận vào bài viết của bạn" + ": " + comment_text
+    notification = Notification(user_id=post_owner.id, content=notification_content)
+
     db.session.add(new_comment)
+    db.session.add(notification)
     db.session.commit()
+
+    # Emit đến user đang sở hữu bài viết
+    socketio.emit('new_notification', {
+        'content': notification_content,
+        'from': user.name,
+        'timestamp': new_comment.created_at.strftime('%d/%m/%Y %H:%M'),
+        'post_url': f'/baiviet/{post.slug}'
+    }, to=str(post_owner.id))
 
     return jsonify({
         'comment': new_comment.content,
@@ -396,7 +451,6 @@ def deletePost():
     post.deleted_at = datetime.utcnow()
     db.session.commit()
     return jsonify({'message': f'Post {post_id} deleted (soft delete)'}), 200
-
 def hard_delete_old_posts():
     threshold_date = datetime.utcnow() - timedelta(days=15)
     old_posts = Post.query.filter(
@@ -407,7 +461,6 @@ def hard_delete_old_posts():
     for post in old_posts:
         db.session.delete(post)
     db.session.commit()
-
 @app.route("/kholuutru")
 def kholuutru():
     posts = Post.query.filter(Post.deleted_at.isnot(None)).all()
@@ -485,6 +538,15 @@ def page_not_found(e):
 @app.errorhandler(403)
 def forbidden_error(error):
     return render_template("forbidden.html"), 403
+def delete_category_by_id():
+    category = Category.query.get(2)
+    if category:
+        db.session.delete(category)
+        db.session.commit()
+        print("Category deleted")
+    else:
+        print("Category not found")
+
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
