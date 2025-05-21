@@ -309,7 +309,7 @@
             const $chatInput = $('#chat-input');
             const $chatMessages = $('#chat-messages');
             const currentUserName = "{{ session['user']['username'] if session.get('user') else '' }}";
-            const currentUserId = "{{ session['user']['id'] }}";
+            const currentUserId = "{{ session['user']['id'] if session.get('user') else '' }}";
             const socket = io({
                 transports: ['websocket', 'polling']
             });
