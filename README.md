@@ -5,7 +5,10 @@ Một nền tảng blog cá nhân được xây dựng bằng **Flask**, sử d�
 🌐 **Truy cập ngay tại:**  
 👉 [https://myblog2-400d.onrender.com](https://myblog2-400d.onrender.com)
 
-![image](https://github.com/user-attachments/assets/6400300c-84cb-4b12-8060-793648f46d1f)
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/6400300c-84cb-4b12-8060-793648f46d1f" width="45%" />
+  <img src="https://github.com/user-attachments/assets/d36f4e4c-2d08-426f-8042-cb885bb8aac3" width="45%" />
+</p>
 
 
 ## 🌟 Tính năng chính
