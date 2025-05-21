@@ -7,7 +7,7 @@ Một nền tảng blog cá nhân được xây dựng bằng **Flask**, sử d�
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/6400300c-84cb-4b12-8060-793648f46d1f" width="45%" />
-  <img src="![image](https://github.com/user-attachments/assets/8f099987-da62-4e66-87d8-cae7b4449fe3)
+  <img src="https://github.com/user-attachments/assets/8f099987-da62-4e66-87d8-cae7b4449fe3"
 " width="45%" />
 </p>
 
