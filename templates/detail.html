@@ -1,7 +1,13 @@
 {% extends "base.html" %}
 
 {% block title %}{{baiviet.title}}{% endblock %}
-
+{% block meta %}
+    <meta property="og:title" content="{{ baiviet.title }}" />
+    <meta property="og:description" content="{{ baiviet.description or 'Tìm hiểu về bài viết thú vị này.' }}" />
+    <meta property="og:image" content="https://myblog2-400d.onrender.com/static/images/{{ baiviet.thumbnail_url }}" />
+    <meta property="og:url" content="{{ request.url }}" />
+    <meta property="og:type" content="article" />
+{% endblock %}
 {% block content %}
     <main
             class="container mx-auto max-w-7xl px-4 py-6 grid grid-cols-1 md:grid-cols-12 gap-6"
