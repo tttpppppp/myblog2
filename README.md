@@ -5,7 +5,8 @@ Một nền tảng blog cá nhân được xây dựng bằng **Flask**, sử d�
 🌐 **Truy cập ngay tại:**  
 👉 [https://myblog2-400d.onrender.com](https://myblog2-400d.onrender.com)
 
-![Blog Python](https://myblog2-400d.onrender.com/static/images/posts/python-cover.png)
+![Blog Python](![image](https://github.com/user-attachments/assets/ba2166c1-2629-43a9-85f3-5d2ec72d1991)
+)
 
 ## 🌟 Tính năng chính
 
