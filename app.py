@@ -3,9 +3,11 @@ import uuid
 from datetime import date, datetime, timedelta, UTC
 from flask_apscheduler import APScheduler
 from flask_socketio import SocketIO, join_room
+from psycopg2._psycopg import IntegrityError
 from pytz import timezone
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort, flash
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import or_
 from werkzeug.utils import secure_filename
 import os
 from os import path
@@ -224,8 +226,20 @@ def register():
         return render_template("register.html", message="Email đã tồn tại")
 
     return redirect(url_for('login'))
+@app.route('/tim-kiem')
+def tim_kiem():
+    keyword = request.args.get('keyword', '').strip()
+    ketqua = []
+    if keyword:
+        ketqua = Post.query.filter(
+            Post.status == 'published',
+            or_(
+                Post.title.ilike(f'%{keyword}%'),
+                Post.content.ilike(f'%{keyword}%')
+            )
+        ).all()
 
-
+    return render_template('timkiem.html', keyword=keyword, ketqua=ketqua)
 
 @app.route('/logout')
 def logout():
@@ -621,8 +635,6 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         print("Database Created")
-    socketio.run(app, debug=True)
     scheduler.add_job(id='Cleanup posts', func=hard_delete_old_posts, trigger='interval', days=1)
-
-    # port = int(os.environ.get('PORT', 5000))
-    # socketio.run(app, debug=True, host='0.0.0.0', port=port)
+    port = int(os.environ.get('PORT', 5000))
+    socketio.run(app, debug=True, host='0.0.0.0', port=port)
