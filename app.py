@@ -171,21 +171,24 @@ def login():
             return check
         return render_template("login.html")
 
-    if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        user = User.query.filter_by(email=email).first()
-        if user and  bcrypt.check_password_hash(user.password,password):
-            session['user'] = {
-                'id': user.id,
-                'username': user.name,
-                'image_url': user.avatar_url,
-            }
-            return redirect(url_for("hub"))
-        else:
-            return render_template("login.html", message="Sai email hoặc mật khẩu")
-    return render_template("login.html", message="Unexpected error")
+    # POST
+    email = request.form.get('email')
+    password = request.form.get('password')
 
+    if not email or not password:
+        return render_template("login.html", message="Vui lòng nhập email và mật khẩu")
+
+    user = User.query.filter_by(email=email).first()
+    if user and bcrypt.check_password_hash(user.password, password):
+        session['user'] = {
+            'id': user.id,
+            'username': user.name,
+            'image_url': user.avatar_url,
+        }
+        return redirect(url_for("hub"))
+
+    return render_template("login.html", message="Sai email hoặc mật khẩu")
+@app.route('/register', methods=['GET', 'POST'])
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'GET':
@@ -193,17 +196,36 @@ def register():
         if check:
             return check
         return render_template("register.html")
-    if request.method == 'POST':
-        name = request.form.get('name')
-        email = request.form.get('email')
-        mobile = request.form.get('mobile')
-        password = request.form.get('password')
-        image = "images/avt.jpg"
-        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-        user = User(name=name, email=email, password=hashed_password, mobile=mobile , avatar_url=image)
+
+    name = request.form.get('name')
+    email = request.form.get('email')
+    mobile = request.form.get('mobile')
+    password = request.form.get('password')
+    confirm_password = request.form.get('confirm_password')
+    image = "images/avt.jpg"
+
+    if not name or not email or not mobile or not password or not confirm_password:
+        return render_template("register.html", message="Vui lòng điền đầy đủ thông tin")
+
+    if password != confirm_password:
+        return render_template("register.html", message="Mật khẩu không khớp")
+
+    if User.query.filter_by(email=email).first():
+        return render_template("register.html", message="Email đã được sử dụng")
+
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+    user = User(name=name, email=email, password=hashed_password, mobile=mobile, avatar_url=image)
+
+    try:
         db.session.add(user)
         db.session.commit()
-        return redirect(url_for('login'))
+    except IntegrityError:
+        db.session.rollback()
+        return render_template("register.html", message="Email đã tồn tại")
+
+    return redirect(url_for('login'))
+
+
 
 @app.route('/logout')
 def logout():
@@ -599,7 +621,8 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         print("Database Created")
+    socketio.run(app, debug=True)
     scheduler.add_job(id='Cleanup posts', func=hard_delete_old_posts, trigger='interval', days=1)
 
-    port = int(os.environ.get('PORT', 5000))
-    socketio.run(app, debug=True, host='0.0.0.0', port=port)
+    # port = int(os.environ.get('PORT', 5000))
+    # socketio.run(app, debug=True, host='0.0.0.0', port=port)

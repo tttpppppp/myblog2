@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Đăng Nhập</title>
-   <link rel="icon" href="https://myblog2-400d.onrender.com/static/images/logoicon.png" />
+    <link rel="icon" href="{{ url_for('static', filename='/images/logoicon.png') }}" type="image/x-icon" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
@@ -66,7 +66,6 @@
               id="email"
               placeholder="name@company.com"
               autocomplete="email"
-              required
               class="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
@@ -78,7 +77,6 @@
               id="password"
               placeholder="••••••••"
               autocomplete="current-password"
-              required
               class="block w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:text-sm"
             />
           </div>
