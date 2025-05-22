@@ -1,13 +1,31 @@
 {% extends "base.html" %}
 
-{% block title %}Tạo Video{% endblock %}
+{% block title %}Tạo Khám Phá{% endblock %}
 
 {% block content %}
     <main class="min-h-screen bg-gray-100 flex items-center justify-center p-4 sm:p-6">
         <div class="w-full max-w-2xl bg-white rounded-2xl shadow-lg p-6 sm:p-8">
             <!-- Header -->
-            <h2 class="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-200 pb-3">Tạo Video Mới</h2>
-
+            <h2 class="text-3xl font-bold text-gray-900 mb-6 border-b border-gray-200 pb-3">Tạo Khám Phá Mới</h2>
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="mb-6 space-y-2">
+                        {% for category, message in messages %}
+                            <div class="p-4 rounded-lg text-sm font-medium
+                    {% if category == 'error' %}
+                        bg-red-100 text-red-700
+                    {% elif category == 'success' %}
+                        bg-green-100 text-green-700
+                    {% else %}
+                        bg-gray-100 text-gray-700
+                    {% endif %}
+                ">
+                                {{ message }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
             <!-- Flash Messages -->
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
@@ -22,54 +40,49 @@
             {% endwith %}
 
             <!-- Form -->
-            <form id="video-form" method="POST" enctype="multipart/form-data" action="/taovideo" class="space-y-6">
+            <form method="POST" enctype="multipart/form-data" action="/taokhampha" class="space-y-6">
                 <!-- Tiêu đề -->
                 <div>
-                    <label for="video-title" class="block text-sm font-semibold text-gray-700 mb-1.5">Tiêu đề video</label>
+                    <label for="discovery-title" class="block text-sm font-semibold text-gray-700 mb-1.5">Tiêu đề khám phá</label>
                     <input
                             type="text"
-                            id="video-title"
+                            id="discovery-title"
                             name="title"
-                            placeholder="Nhập tiêu đề video..."
+                            placeholder="Nhập tiêu đề khám phá..."
                             required
-                            aria-required="true"
                             class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
                     />
                 </div>
 
-                <!-- Mô tả -->
+                <!-- Nội dung -->
                 <div>
-                    <label for="description" class="block text-sm font-semibold text-gray-700 mb-1.5">Mô tả video</label>
+                    <label for="content" class="block text-sm font-semibold text-gray-700 mb-1.5">Nội dung khám phá</label>
                     <textarea
-                            id="description"
-                            name="description"
-                            rows="4"
-                            placeholder="Mô tả video của bạn..."
+                            id="content"
+                            name="content"
+                            rows="6"
+                            placeholder="Viết nội dung khám phá ở đây..."
                             class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-gray-900 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200"
-                            aria-describedby="description-help"
                     ></textarea>
-                    <p id="description-help" class="text-xs text-gray-500 mt-1">Mô tả giúp người xem hiểu nội dung video.</p>
                 </div>
 
-                <!-- Video File -->
+                <!-- Ảnh minh họa -->
                 <div>
-                    <label for="video-file" class="block text-sm font-semibold text-gray-700 mb-1.5">Tệp video</label>
+                    <label for="image-file" class="block text-sm font-semibold text-gray-700 mb-1.5">Video</label>
                     <div class="relative border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition duration-200">
                         <input
                                 type="file"
-                                id="video-file"
-                                name="video_file"
+                                name="video"
                                 accept="video/*"
                                 required
-                                aria-required="true"
                                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         />
                         <div class="flex flex-col items-center justify-center">
-                            <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V8m0 0l-3 3m3-3l3 3m-6 6h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M3 7l4 4-4 4m0-8h14a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z"/>
                             </svg>
-                            <p class="text-sm text-gray-600">Kéo và thả video hoặc <span class="text-blue-600 hover:underline">chọn tệp</span></p>
-                            <p class="text-xs text-gray-400 mt-1">Hỗ trợ: MP4, AVI, MOV, WMV (Tối đa 100MB)</p>
+                            <p class="text-sm text-gray-600">Upload video</p>
                         </div>
                     </div>
                 </div>
@@ -80,7 +93,7 @@
                             type="submit"
                             class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2.5 px-6 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     >
-                        Đăng Video
+                        Đăng Khám Phá
                     </button>
                 </div>
             </form>

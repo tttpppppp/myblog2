@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Khám Phá{% endblock %}
+
+{% block content %}
+    <div class="container mx-auto px-4 py-12 max-w-2xl">
+        <h1 class="text-4xl font-extrabold text-gray-900 mb-12 text-center tracking-tight">Khám Phá</h1>
+
+        {% if khamphas %}
+            <div class="space-y-8">
+                {% for item in khamphas %}
+                    <div class="bg-white border border-gray-200 rounded-xl shadow-lg p-6 transition-shadow duration-300 hover:shadow-xl">
+                        <!-- Header user -->
+                        <a href="/blogger/{{ item.user.id }}" class="flex items-center gap-4 mb-5">
+                            <img src="{{ url_for('static', filename=item.user.avatar_url) }}" alt="avatar" class="w-10 h-10 rounded-full object-cover border-2 border-indigo-200">
+                            <div>
+                                <p class="font-bold text-gray-900 text-lg hover:text-indigo-600 transition-colors">{{ item.user.name }}</p>
+                                <p class="text-sm text-gray-500">{{ item.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
+                            </div>
+                        </a>
+
+                        <!-- Title & description -->
+                        <h3 class="text-2xl font-semibold text-gray-900 mb-3 line-clamp-2">{{ item.title }}</h3>
+                        <p class="text-gray-600 mb-5 line-clamp-3">{{ item.description }}</p>
+
+                        <!-- Video -->
+                        <video class="w-full h-96 rounded-lg shadow-md" controls>
+                            <source src="{{ url_for('static', filename=item.filename) }}" type="video/mp4" />
+                            Trình duyệt của bạn không hỗ trợ thẻ video.
+                        </video>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="text-center text-gray-500 text-lg font-medium py-8">Chưa có video khám phá nào.</p>
+        {% endif %}
+    </div>
+{% endblock %}

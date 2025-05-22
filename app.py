@@ -1,9 +1,10 @@
+import time
 import uuid
 from datetime import date, datetime, timedelta, UTC
 from flask_apscheduler import APScheduler
 from flask_socketio import SocketIO, join_room
 from pytz import timezone
-from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
 import os
@@ -11,7 +12,7 @@ from os import path
 from flask_bcrypt import Bcrypt
 from slugify import slugify
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin:WJeYgQNQlYx2Wnh7I2o6lstiVYEkCHtp@dpg-d0m9kgjuibrs7388lc3g-a/myblogdb_i028'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin:WJeYgQNQlYx2Wnh7I2o6lstiVYEkCHtp@dpg-d0m9kgjuibrs7388lc3g-a.oregon-postgres.render.com/myblogdb_i028'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'trantienphuc'
 db = SQLAlchemy(app)
@@ -36,8 +37,6 @@ class User(db.Model):
     comments = db.relationship('Comment', backref='user', lazy=True)
     messages = db.relationship('Message', back_populates='user', lazy='dynamic')
     notifications = db.relationship('Notification', back_populates='user', lazy='dynamic')
-
-
 class Category(db.Model):
     __tablename__ = 'categories'
 
@@ -114,6 +113,17 @@ class Notification(db.Model):
 
     user = db.relationship('User', back_populates='notifications')
 
+class KhamPha(db.Model):
+    __tablename__ = 'khampha'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text, nullable=True)
+    filename = db.Column(db.String(255), nullable=False)  # Tên tệp video
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+
+    user = db.relationship('User', backref='khamphas')
 
 def create_default_categories():
     with app.app_context():
@@ -254,7 +264,7 @@ def post(slug):
                            baiviet=baiviet,
                            created_at_vn=created_at_vn,
                            related_posts=related_posts,
-                           comments=comments , tags=tags)
+                           comments=comments , tags=tags,request=request)
 
 @app.route('/taobaiviet', methods=['GET', 'POST'])
 def createPost():
@@ -351,12 +361,14 @@ def editPost(slug):
 
     # Cập nhật ảnh nếu có
     image = request.files.get('image')
+    print(image)
     if image and image.filename != '':
-        filename = secure_filename(image.filename)
+        filename = f"{int(time.time())}_{secure_filename(image.filename)}"
         filepath = os.path.join('static/uploads', filename)
         image.save(filepath)
-        post.image_url = 'uploads/' + filename
+        post.thumbnail_url = 'uploads/' + filename
 
+    print("New image_url:", post.thumbnail_url)
     db.session.commit()
     return redirect(url_for('post', slug=post.slug))
 
@@ -415,8 +427,12 @@ def addComment():
         user_id=user_id,
     )
 
-    notification_content = f"{user.name} vừa bình luận vào bài viết của bạn" + ": " + comment_text
-    notification = Notification(user_id=post_owner.id, content=notification_content)
+    if user.id != post_owner.id:
+        notification_content = f"{user.name} vừa bình luận vào bài viết của bạn: {comment_text}"
+        notification = Notification(user_id=post_owner.id, content=notification_content)
+        db.session.add(notification)
+        db.session.commit()
+
 
     db.session.add(new_comment)
     db.session.add(notification)
@@ -531,29 +547,59 @@ def get_messages():
             'timestamp': msg.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         })
     return jsonify(result)
-@app.route("/taokhampha" , methods=['GET' , 'POST'])
+
+@app.route("/taokhampha", methods=['GET', 'POST'])
 def taokhampha():
     if request.method == "GET":
+        check = protectedUrl()
+        if check:
+            return check
         return render_template("khamphacreate.html")
+    # POST
+    title = request.form.get('title')
+    content = request.form.get('content')
+    video = request.files.get('video')
+
+    if not title or not video:
+        flash("Vui lòng điền tiêu đề và tải lên video.", "error")
+        return render_template("khamphacreate.html")
+
+    videoName = secure_filename(video.filename)
+    filepath = os.path.join('static/uploads', videoName)
+    videoUrl = 'uploads/' + videoName
+    video.save(filepath)
+
+    new_khampha = KhamPha(
+        title=title,
+        description=content,
+        filename=videoUrl,
+        user_id= session['user']['id'],
+    )
+
+    db.session.add(new_khampha)
+    db.session.commit()
+
+    flash("Tạo khám phá thành công!", "success")
+    return redirect(url_for('taokhampha'))
+
+@app.route("/kham-pha", methods=['GET'])
+def khampha_list():
+    # Lấy tất cả khám phá trong db
+    khampha_all = KhamPha.query.order_by(KhamPha.created_at.desc()).all()
+    return render_template("khampha_list.html", khamphas=khampha_all)
+
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('PageNotFound.html'), 404
 @app.errorhandler(403)
 def forbidden_error(error):
     return render_template("forbidden.html"), 403
-def delete_category_by_id():
-    category = Category.query.get(2)
-    if category:
-        db.session.delete(category)
-        db.session.commit()
-        print("Category deleted")
-    else:
-        print("Category not found")
 
 if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         print("Database Created")
     scheduler.add_job(id='Cleanup posts', func=hard_delete_old_posts, trigger='interval', days=1)
+
     port = int(os.environ.get('PORT', 5000))
     socketio.run(app, debug=True, host='0.0.0.0', port=port)
