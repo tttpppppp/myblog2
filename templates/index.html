@@ -20,51 +20,44 @@
             </span>
                 </div>
             </form>
-            <div class="bg-white shadow-md p-6 rounded-lg sticky-sidebar">
-                <!-- Profile với hiệu ứng hover -->
-                {% if session['user'] %}
-                    <a
-                            href="/blogger/{{ session['user']['id'] }}"
-                            class="flex items-center p-2 rounded-md hover:bg-gray-100 transition duration-200 cursor-pointer"
-                    >
-                        {% if session.get('user') and session['user'].get('image_url') %}
+            <div class="bg-white rounded-lg p-6">
+                <div class="space-y-4">
+                    {% if session['user'] %}
+                        <a
+                                href="/blogger/{{ session['user']['id'] }}"
+                                class="flex items-center p-3 rounded-lg hover:bg-gray-100 transition duration-200"
+                        >
                             <img
-                                    src="{{ url_for('static', filename= session['user']['image_url']) }}"
+                                    src="{{ url_for('static', filename= session['user'].get('image_url', 'images/avt.jpg')) }}"
                                     alt="User Avatar"
-                                    class="w-8 h-8 rounded-full mr-3"
+                                    class="w-8 h-8 rounded-full mr-3 object-cover"
                             />
-                        {% else %}
-                            <img
-                                    src="{{ url_for('static', filename='images/avt.jpg') }}"
-                                    alt="User Avatar"
-                                    class="w-8 h-8 rounded-full mr-3"
-                            />
-                        {% endif %}
-                        <span class="text-sm font-semibold text-gray-500">{{ session['user']['username'] }}</span>
-                    </a>
-                {% endif %}
-                <ul class="space-y-3 text-base">
-                    <li>
-                        <a href="/kholuutru" class="flex items-center p-2 text-gray-600 hover:bg-gray-100 rounded-md">
-                            ⏳ Kho lưu trữ bài viết
+                            <span class="text-sm font-medium text-gray-800">{{ session['user']['username'] }}</span>
                         </a>
-                    </li>
-                    <li>
-                        <a href="#" class="flex items-center p-2 text-gray-600 hover:bg-gray-100 rounded-md">
-                            🕒 Lịch sử xem
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/kham-pha" class="flex items-center p-2 text-gray-600 hover:bg-gray-100 rounded-md">
-                            🔍 Khám Phá Video
-                        </a>
-                    </li>
-                    <li>
-                        <button type="button" id="dangxuat" class="flex items-center p-2 text-gray-600 hover:bg-gray-100 rounded-md w-full">
-                            ⚙️ Đăng xuất
-                        </button>
-                    </li>
-                </ul>
+                    {% endif %}
+                    <ul class="space-y-2 text-sm">
+                        <li>
+                            <a href="/kholuutru" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition duration-200">
+                                <i class="fa-solid fa-box-archive mr-2"></i> Kho lưu trữ bài viết
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition duration-200">
+                                <i class="fa-solid fa-clock-rotate-left mr-2"></i> Lịch sử xem
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/kham-pha" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition duration-200">
+                                <i class="fa-solid fa-video mr-2"></i> Khám Phá Video
+                            </a>
+                        </li>
+                        <li>
+                            <button type="button" id="dangxuat" class="flex items-center p-3 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition duration-200 w-full text-left">
+                                <i class="fa-solid fa-right-from-bracket mr-2"></i> Đăng xuất
+                            </button>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </aside>
 
@@ -126,43 +119,40 @@
             </div>
         </section>
 
-        <aside class="md:col-span-3 bg-white shadow-md p-6 rounded-lg sticky-sidebar">
-            <div class="mb-6">
-                <h3 class="text-lg font-semibold text-gray-800">
-                    Bài Viết Nổi Bật
-                </h3>
-                <ul class="space-y-3">
+        <aside class="lg:col-span-3 bg-white rounded-xl shadow-sm p-6 sticky-sidebar">
+            <!-- Featured Posts -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Bài Viết Nổi Bật</h3>
+                <ul class="space-y-3 text-sm">
                     {% for i in postsView %}
                         <li>
                             <a
                                     href="/baiviet/{{ i.slug }}"
-                                    class="text-blue-700 hover:text-blue-800 hover:underline transition duration-200 text-sm"
+                                    class="text-blue-600 hover:text-blue-800 hover:underline transition duration-200"
                             >{{ i.title }}</a>
                         </li>
                     {% endfor %}
                 </ul>
             </div>
-            <div>
-                <h3 class="text-lg font-semibold text-gray-800">
-                    Bài Viết Mới Nhất
-                </h3>
-                <ul class="space-y-3">
+            <!-- Recent Posts -->
+            <div class="mb-8">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Bài Viết Mới Nhất</h3>
+                <ul class="space-y-3 text-sm">
                     {% for i in posts[:3] %}
                         <li>
                             <a
                                     href="/baiviet/{{ i.slug }}"
-                                    class="text-blue-700 hover:text-blue-800 hover:underline transition duration-200 text-sm"
+                                    class="text-blue-600 hover:text-blue-800 hover:underline transition duration-200"
                             >{{ i.title }}</a>
                         </li>
                     {% endfor %}
                 </ul>
             </div>
-            <div class="mt-6">
-                <h3 class="text-lg font-semibold text-gray-800">
-                    Thời tiết hôm nay
-                </h3>
-                <div class="weather-widget mt-1 text-center">
-                    <p class="text-sm" id="weather-info">Đang tải...</p>
+            <!-- Weather Widget -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">Thời tiết hôm nay</h3>
+                <div class="weather-widget text-center">
+                    <p class="text-sm text-gray-600" id="weather-info">Đang tải...</p>
                 </div>
             </div>
         </aside>
