@@ -27,7 +27,7 @@
                     <div class="grid grid-cols-2 gap-3 max-h-36 overflow-y-auto border border-gray-200 rounded-md p-3 bg-gray-50">
                         {% for category in categories %}
                             <label class="flex items-center space-x-2 cursor-pointer text-gray-700 hover:text-blue-600">
-                                <input required type="checkbox" name="category_ids" value="{{ category.id }}" class="form-checkbox h-4 w-4 text-blue-600" />
+                                <input type="checkbox" name="category_ids" value="{{ category.id }}" class="form-checkbox h-4 w-4 text-blue-600" />
                                 <span class="text-sm">{{ category.name }}</span>
                             </label>
                         {% endfor %}
@@ -49,14 +49,8 @@
                     </select>
                 </div>
 
-
                 <!-- Hình ảnh -->
                 <div>
-                    <div id="image-preview" class="mt-2 hidden">
-                        <img src="" alt="Image Preview" class="w-[100px] h-auto rounded-md">
-                    </div><div id="image-preview" class="mt-2 hidden">
-                    <img src="" alt="Image Preview" class="max-w-full h-auto rounded-md">
-                </div>
                     <label for="post-image" class="block mb-1 text-gray-700 font-semibold">Hình ảnh bài viết</label>
                     <div class="relative border-2 border-dashed border-gray-300 rounded-md p-6 text-center hover:border-blue-500 transition duration-200">
                         <input
@@ -68,12 +62,17 @@
                                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         />
                         <div class="flex flex-col items-center justify-center">
-                            <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V8m0 0l-3 3m3-3l3 3m-6 6h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                      d="M7 16V8m0 0l-3 3m3-3l3 3m-6 6h12a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                             </svg>
                             <p class="text-sm text-gray-600">Kéo và thả hình ảnh hoặc <span class="text-blue-600 hover:underline">chọn tệp</span></p>
                             <p class="text-xs text-gray-400 mt-1">Hỗ trợ: PNG, JPG, JPEG, GIF (Tối đa 10MB)</p>
                         </div>
+                    </div>
+                    <div id="image-preview" class="mt-4 hidden">
+                        <img src="" alt="Image Preview" class="max-w-full h-auto rounded-md">
                     </div>
                 </div>
 
@@ -127,4 +126,44 @@
             </form>
         </div>
     </main>
+
+    <script>
+        function validateCheckboxes() {
+            const checkboxes = document.querySelectorAll('input[name="category_ids"]:checked');
+            if (checkboxes.length === 0) {
+                alert("Bạn phải chọn ít nhất một danh mục.");
+                return false;
+            }
+            return true;
+        }
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("post-form");
+            form.addEventListener("submit", function (e) {
+                if (!validateCheckboxes()) {
+                    e.preventDefault();
+                }
+            });
+
+            // Preview hình ảnh
+            const fileInput = document.getElementById("post-image");
+            const previewContainer = document.getElementById("image-preview");
+            const previewImage = previewContainer.querySelector("img");
+
+            fileInput.addEventListener("change", function () {
+                const file = this.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        previewImage.src = e.target.result;
+                        previewContainer.classList.remove("hidden");
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    previewImage.src = "";
+                    previewContainer.classList.add("hidden");
+                }
+            });
+        });
+    </script>
 {% endblock %}
