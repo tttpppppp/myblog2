@@ -27,7 +27,7 @@
                     <div class="grid grid-cols-2 gap-3 max-h-36 overflow-y-auto border border-gray-200 rounded-md p-3 bg-gray-50">
                         {% for category in categories %}
                             <label class="flex items-center space-x-2 cursor-pointer text-gray-700 hover:text-blue-600">
-                                <input type="checkbox" name="category_ids" value="{{ category.id }}" class="form-checkbox h-4 w-4 text-blue-600" />
+                                <input required type="checkbox" name="category_ids" value="{{ category.id }}" class="form-checkbox h-4 w-4 text-blue-600" />
                                 <span class="text-sm">{{ category.name }}</span>
                             </label>
                         {% endfor %}
@@ -64,6 +64,7 @@
                                 id="post-image"
                                 name="image"
                                 accept="image/*"
+                                required
                                 class="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         />
                         <div class="flex flex-col items-center justify-center">
@@ -84,6 +85,7 @@
                             name="description"
                             rows="3"
                             placeholder="Mô tả bài viết"
+                            required
                             class="w-full border border-gray-300 rounded-md px-3 py-2 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
                     ></textarea>
                 </div>
@@ -96,6 +98,7 @@
                             id="tags"
                             name="tags"
                             placeholder="ví dụ: công nghệ, AI, học lập trình"
+                            required
                             class="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
@@ -107,6 +110,7 @@
                             id="post-content"
                             name="content"
                             rows="6"
+                            required
                             class="w-full border border-gray-300 rounded-md px-3 py-2 resize-y focus:outline-none focus:ring-2 focus:ring-blue-500"
                     ></textarea>
                 </div>
