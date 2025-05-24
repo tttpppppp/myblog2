@@ -462,22 +462,22 @@ def addComment():
         post_id=post_id,
         user_id=user_id,
     )
+    db.session.add(new_comment)
 
-    if user.id != post_owner.id:
+   if user.id != post_owner.id:
         notification_content = f"{user.name} vừa bình luận vào bài viết của bạn: {comment_text}"
         notification = Notification(user_id=post_owner.id, content=notification_content)
         db.session.add(notification)
-        db.session.commit()
+        db.session.commit() 
+        
         socketio.emit('new_notification', {
             'content': notification_content,
             'from': user.name,
             'timestamp': new_comment.created_at.strftime('%d/%m/%Y %H:%M'),
             'post_url': f'/baiviet/{post.slug}'
         }, to=str(post_owner.id))
-
-    db.session.add(new_comment)
-    db.session.add(notification)
-    db.session.commit()
+    else:
+        db.session.commit()
 
     return jsonify({
         'comment': new_comment.content,
