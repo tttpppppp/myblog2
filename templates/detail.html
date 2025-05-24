@@ -168,7 +168,7 @@
                 <ul class="space-y-4">
                     {% for post in related_posts %}
                         <li>
-                            <a href="/danhmuc/{{ post.slug }}" class="flex items-center gap-3 hover:text-blue-700">
+                            <a href="/baiviet/{{ post.slug }}" class="flex items-center gap-3 hover:text-blue-700">
                                 <img
                                         src="{{ url_for('static', filename=post.thumbnail_url) }}"
                                         alt="{{ post.title }}"
