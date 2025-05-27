@@ -60,23 +60,32 @@
                     <svg class="w-6 h-6 text-gray-600 group-hover:text-blue-700 transition duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                     </svg>
-{#                    <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">3</span>#}
+                    {% if unread_count > 0 %}
+                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                        {{ unread_count }}
+                      </span>
+                    {% endif %}
                 </button>
                 <!-- Notification Dropdown Content -->
                 <div id="notification-dropdown" class="hidden absolute right-0 mt-2 w-[400px] bg-white rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
                     <div class="p-4 border-b">
                         <h3 class="text-sm font-semibold text-gray-800">Thông báo</h3>
                     </div>
-                    <dic class="divide-y" id="notiform">
+                    <div class="divide-y" id="notiform">
                         {% for noti in notifications %}
-                            <a href="" class="p-4 hover:bg-gray-100 cursor-pointer block">
-                                <p class="text-sm text-gray-700">{{ noti.content }}</p>
+                            <a href="/baiviet/{{ noti.post.slug }}#comment-list"
+                               class="notification-link p-4 block cursor-pointer hover:bg-gray-100 {% if not noti.is_read %}bg-blue-50{% endif %}"
+                               data-id="{{ noti.id }}">
+                                {% if not noti.is_read %}
+                                    <span class="inline-block w-2 h-2 bg-red-500 rounded-full mr-2 align-middle"></span>
+                                {% endif %}
+                                <span class="text-sm text-gray-700">{{ noti.content }}</span>
                                 <span class="text-xs text-gray-500">{{ noti.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
                             </a>
                         {% else %}
                             <li class="p-4 text-sm text-gray-500">Không có thông báo nào.</li>
                         {% endfor %}
-                    </dic>
+                    </div>
 
                     <div class="p-4 border-t">
                         <a href="/thongbao" class="text-sm text-blue-600 hover:underline">Xem tất cả thông báo</a>
@@ -295,7 +304,6 @@
                             <p class="text-gray-700">${response.comment}</p>
                         </div>
                     `);
-                        commentList.prepend(newComment);
                         $("#comment-content").val("");
                     },
                     error: function (xhr) {
@@ -462,6 +470,26 @@
             if (!dropdown.contains(event.target) && !button.contains(event.target)) {
                 dropdown.classList.add('hidden');
             }
+        });
+    </script>
+    <script>
+        $('.notification-link').click(function(event) {
+            event.preventDefault();
+
+            const notiId = $(this).data('id');
+            let url = $(this).attr('href');
+            $.ajax({
+                url: '/notifications/mark-as-read',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ id: notiId }),
+                success: function() {
+                    window.location.href = url;
+                },
+                error: function() {
+                    window.location.href = url;
+                }
+            });
         });
     </script>
 </body>

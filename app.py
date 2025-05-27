@@ -65,6 +65,7 @@ class Post(db.Model):
     post_categories = db.relationship('PostCategory', backref='post', cascade="all, delete-orphan", lazy=True)
     comments = db.relationship('Comment', backref='post', cascade="all, delete-orphan", lazy='dynamic')
     tags = db.relationship('Tag', secondary='post_tags', back_populates='posts')
+    notifications = db.relationship('Notification', back_populates='post')
 
 class PostCategory(db.Model):
     __tablename__ = 'post_categories'
@@ -109,11 +110,14 @@ class Notification(db.Model):
 
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=True)
+
     content = db.Column(db.Text, nullable=False)
     is_read = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     user = db.relationship('User', back_populates='notifications')
+    post = db.relationship('Post', back_populates='notifications')
 
 class KhamPha(db.Model):
     __tablename__ = 'khampha'
@@ -124,7 +128,6 @@ class KhamPha(db.Model):
     filename = db.Column(db.String(255), nullable=False)  # Tên tệp video
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
-
     user = db.relationship('User', backref='khamphas')
 
 def create_default_categories():
@@ -161,7 +164,9 @@ def inject_categories():
         return dict(categories=categories, notifications=[])
     user_id = user_session['id']
     notifications = Notification.query.filter_by(user_id=user_id).order_by(Notification.created_at.desc()).limit(5).all()
-    return dict(categories=categories ,notifications = notifications)
+    unread_count = Notification.query.filter_by(user_id=user_id, is_read=False).count()
+    return dict(categories=categories ,notifications = notifications , unread_count = unread_count)
+
 @app.route('/' , methods=['GET'])
 def index():
     return render_template("hub.html")
@@ -190,7 +195,7 @@ def login():
         return redirect(url_for("hub"))
 
     return render_template("login.html", message="Sai email hoặc mật khẩu")
-
+@app.route('/register', methods=['GET', 'POST'])
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'GET':
@@ -463,22 +468,24 @@ def addComment():
         user_id=user_id,
     )
 
-    db.session.add(new_comment)
-
     if user.id != post_owner.id:
         notification_content = f"{user.name} vừa bình luận vào bài viết của bạn: {comment_text}"
-        notification = Notification(user_id=post_owner.id, content=notification_content)
+        notification = Notification(user_id=post_owner.id, content=notification_content , post_id=post_id)
         db.session.add(notification)
         db.session.commit()
 
-        socketio.emit('new_notification', {
-            'content': notification_content,
-            'from': user.name,
-            'timestamp': new_comment.created_at.strftime('%d/%m/%Y %H:%M'),
-            'post_url': f'/baiviet/{post.slug}'
-        }, to=str(post_owner.id))
-    else:
-        db.session.commit()
+
+    db.session.add(new_comment)
+    db.session.add(notification)
+    db.session.commit()
+
+    # Emit đến user đang sở hữu bài viết
+    socketio.emit('new_notification', {
+        'content': notification_content,
+        'from': user.name,
+        'timestamp': new_comment.created_at.strftime('%d/%m/%Y %H:%M'),
+        'post_url': f'/baiviet/{post.slug}'
+    }, to=str(post_owner.id))
 
     return jsonify({
         'comment': new_comment.content,
@@ -487,6 +494,17 @@ def addComment():
         'created_at': new_comment.created_at.strftime('%d/%m/%Y %H:%M')
     }), 200
 
+@app.route('/notifications/mark-as-read', methods=['POST'])
+def mark_notification_as_read():
+    data = request.get_json()
+    noti_id = data.get('id')
+    if noti_id:
+        noti = Notification.query.get(noti_id)
+        if noti:
+            noti.is_read = True
+            db.session.commit()
+            return jsonify({'status': 'success'})
+    return jsonify({'status': 'failed'}), 400
 @app.route('/deletepost', methods=['POST'])
 def deletePost():
     data = request.get_json()
@@ -633,6 +651,7 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         print("Database Created")
+        
     scheduler.add_job(id='Cleanup posts', func=hard_delete_old_posts, trigger='interval', days=1)
     port = int(os.environ.get('PORT', 5000))
     socketio.run(app, debug=True, host='0.0.0.0', port=port)
