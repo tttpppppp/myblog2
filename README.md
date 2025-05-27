@@ -11,12 +11,17 @@ Một nền tảng blog cá nhân được xây dựng bằng **Flask**, sử d�
 " width="45%" />
 </p>
 
+
 <p align="center">
   <img src="https://github.com/user-attachments/assets/17fb094b-13c1-4266-84c7-1151128b2247"
 " width="45%" />
   <img src="https://github.com/user-attachments/assets/21327b47-7b6f-4162-84d9-4c4afecb188e" width="45%" />
 </p>
-
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/b4f66cf5-000b-4516-bc03-854f86edcd53"
+" width="45%" />
+  <img src="" width="45%" />
+</p>
 ## 🌟 Tính năng chính
 
 - ✅ Đăng ký / Đăng nhập với mật khẩu mã hóa bằng bcrypt
