@@ -529,18 +529,22 @@ def hard_delete_old_posts():
     for post in old_posts:
         db.session.delete(post)
     db.session.commit()
+    
 @app.route("/kholuutru")
 def kholuutru():
-    posts = Post.query.filter(Post.deleted_at.isnot(None)).all()
+    user = session.get("user")
+    if not user:
+        return "Bạn chưa đăng nhập", 401
+    user_id =  session.get('user')['id']
+    posts = Post.query.filter(
+        Post.user_id == user_id,
+        Post.deleted_at.isnot(None)
+    ).all()
     now = datetime.utcnow()
-
     for post in posts:
-        if post.deleted_at is not None:
-            expiration_time = post.deleted_at + timedelta(days=15)
-            remaining = expiration_time - now
-            post.remaining_seconds = max(int(remaining.total_seconds()), 0)
-        else:
-            post.remaining_seconds = 0
+        expiration_time = post.deleted_at + timedelta(days=15)
+        remaining = expiration_time - now
+        post.remaining_seconds = max(int(remaining.total_seconds()), 0)
     return render_template("store.html", posts=posts)
 
 @app.route('/restore_post', methods=['POST'])
