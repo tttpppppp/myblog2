@@ -14,8 +14,7 @@ Một nền tảng blog cá nhân được xây dựng bằng **Flask**, sử d�
 <p align="center">
   <img src="https://github.com/user-attachments/assets/17fb094b-13c1-4266-84c7-1151128b2247"
 " width="45%" />
-  <img src="![image](![image](https://github.com/user-attachments/assets/a0e44ae2-abe1-4546-987f-efd00a53e5d8)
-)
+  <img src="https://github.com/user-attachments/assets/3caae5b2-6cf1-4af6-94d2-83940370159d
 " width="45%" />
 </p>
 
