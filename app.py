@@ -80,7 +80,7 @@ class Comment(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
     user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
     content = db.Column(db.Text)
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
+        created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Tag(db.Model):
     __tablename__ = 'tags'
