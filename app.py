@@ -4,6 +4,7 @@ from datetime import date, datetime, timedelta, UTC
 from flask_apscheduler import APScheduler
 from flask_socketio import SocketIO, join_room
 from psycopg2._psycopg import IntegrityError
+from flask_migrate import Migrate
 from pytz import timezone
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort, flash
 from flask_sqlalchemy import SQLAlchemy
@@ -23,6 +24,7 @@ scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+migrate = Migrate(app, db)
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -80,7 +82,7 @@ class Comment(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
     user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
     content = db.Column(db.Text)
-        created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Tag(db.Model):
     __tablename__ = 'tags'
@@ -467,8 +469,8 @@ def addComment():
         post_id=post_id,
         user_id=user_id,
     )
-    db.session.add(new_comment)  
-    db.session.commit()       
+    db.session.add(new_comment)
+    db.session.commit()
 
     if user.id != post_owner.id:
         notification_content = f"{user.name} vừa bình luận vào bài viết của bạn: {comment_text}"
@@ -525,7 +527,6 @@ def hard_delete_old_posts():
     for post in old_posts:
         db.session.delete(post)
     db.session.commit()
-    
 @app.route("/kholuutru")
 def kholuutru():
     user = session.get("user")
@@ -542,6 +543,7 @@ def kholuutru():
         remaining = expiration_time - now
         post.remaining_seconds = max(int(remaining.total_seconds()), 0)
     return render_template("store.html", posts=posts)
+
 
 @app.route('/restore_post', methods=['POST'])
 def restore_post():
@@ -651,7 +653,7 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
         print("Database Created")
-        
     scheduler.add_job(id='Cleanup posts', func=hard_delete_old_posts, trigger='interval', days=1)
+
     port = int(os.environ.get('PORT', 5000))
     socketio.run(app, debug=True, host='0.0.0.0', port=port)
