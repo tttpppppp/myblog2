@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{% block title %}Trang mặc định{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
     <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
     <link rel="icon" href="https://myblog2-400d.onrender.com/static/images/logoicon.png">
@@ -108,7 +109,6 @@
         {% block content %}{% endblock %}
         <div id="toast-container" class="fixed top-5 right-5 z-50 space-y-3"></div>
     </main>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@latest/index.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.ckeditor.com/4.22.1/standard/ckeditor.js"></script>
@@ -305,6 +305,7 @@
                         </div>
                     `);
                         $("#comment-content").val("");
+                        $("#comment-list").prepend(newComment);
                     },
                     error: function (xhr) {
                         window.location.href = "{{ url_for('login') }}";
