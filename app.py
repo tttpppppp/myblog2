@@ -195,7 +195,7 @@ def login():
         return redirect(url_for("hub"))
 
     return render_template("login.html", message="Sai email hoặc mật khẩu")
-@app.route('/register', methods=['GET', 'POST'])
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'GET':
@@ -467,10 +467,12 @@ def addComment():
         post_id=post_id,
         user_id=user_id,
     )
+    db.session.add(new_comment)  
+    db.session.commit()       
 
     if user.id != post_owner.id:
         notification_content = f"{user.name} vừa bình luận vào bài viết của bạn: {comment_text}"
-        notification = Notification(user_id=post_owner.id, content=notification_content , post_id=post_id)
+        notification = Notification(user_id=post_owner.id, content=notification_content, post_id=post_id)
         db.session.add(notification)
         db.session.commit()
         socketio.emit('new_notification', {
@@ -480,16 +482,13 @@ def addComment():
             'post_url': f'/baiviet/{post.slug}'
         }, to=str(post_owner.id))
 
-
-
-    db.session.add(new_comment)
-    db.session.commit()
     return jsonify({
         'comment': new_comment.content,
         'user_name': user.name,
         'avatar': user.avatar_url,
         'created_at': new_comment.created_at.strftime('%d/%m/%Y %H:%M')
     }), 200
+
 
 @app.route('/notifications/mark-as-read', methods=['POST'])
 def mark_notification_as_read():
