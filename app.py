@@ -476,7 +476,6 @@ def addComment():
 
 
     db.session.add(new_comment)
-    db.session.add(notification)
     db.session.commit()
 
     # Emit đến user đang sở hữu bài viết
