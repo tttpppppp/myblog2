@@ -4,7 +4,6 @@ from datetime import date, datetime, timedelta, UTC
 from flask_apscheduler import APScheduler
 from flask_socketio import SocketIO, join_room
 from psycopg2._psycopg import IntegrityError
-from flask_migrate import Migrate
 from pytz import timezone
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort, flash
 from flask_sqlalchemy import SQLAlchemy
@@ -24,7 +23,6 @@ scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
-migrate = Migrate(app, db)
 
 class User(db.Model):
     __tablename__ = 'users'
