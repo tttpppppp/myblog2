@@ -4,7 +4,7 @@
 
 {% block content %}
     <main class="container mx-auto max-w-7xl px-4 py-6 grid grid-cols-1 md:grid-cols-12 gap-6">
-        <aside class="md:col-span-3 p-6 rounded-lg sticky-sidebar">
+        <aside class="md:col-span-3 p-6 rounded-lg sticky-sidebar pt-2">
             <form action="/tim-kiem" method="get" class="mb-4 max-w-full">
                 <div class="relative flex items-center">
                     <input
@@ -14,10 +14,10 @@
                             class="w-full p-3 pr-10 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition duration-200 placeholder-gray-400"
                     />
                     <span class="absolute right-3 text-gray-400">
-                    <button type="submit">
-                         <i class="fa-solid fa-magnifying-glass"></i>
-                    </button>
-            </span>
+                        <button type="submit">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                        </button>
+                    </span>
                 </div>
             </form>
             <div class="bg-white rounded-lg p-6">
@@ -62,6 +62,29 @@
         </aside>
 
         <section class="md:col-span-6 min-w-0 space-y-6">
+            <!-- Slider -->
+            <div class="swiper rounded-lg overflow-hidden">
+                <div class="swiper-wrapper">
+                    {% for i in postsView %}
+                        <div class="swiper-slide">
+                            <a href="/baiviet/{{ i.slug }}" class="relative block">
+                                <img src="{{ url_for('static', filename= i.thumbnail_url) }}"
+                                     alt="{{ i.title }}"
+                                     class="w-full h-64 object-cover object-center">
+                                <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
+                                    <h3 class="text-white text-lg font-semibold">{{ i.title }}</h3>
+                                    <p class="text-gray-300 text-sm line-clamp-1">{{ i.description|safe }}</p>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="swiper-pagination"></div>
+                <div class="swiper-button-next"></div>
+                <div class="swiper-button-prev"></div>
+            </div>
+
+            <!-- Danh sách bài viết -->
             <div class="flex flex-col items-center justify-center gap-5">
                 {% for i in posts %}
                     <a href="/baiviet/{{ i.slug }}">
@@ -69,17 +92,17 @@
                             <img src="{{ url_for('static', filename= i.thumbnail_url)}}"
                                  class="w-full h-48 object-cover object-center" />
                             <div class="p-5 flex flex-col justify-between flex-1">
-                          <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium
-                                    {% if i.status == 'draft' %}
-                                        bg-gray-100 text-gray-600
-                                    {% elif i.status == 'published' %}
-                                        bg-green-100 text-green-700
-                                    {% elif i.status == 'archived' %}
-                                        bg-yellow-100 text-yellow-800
-                                    {% else %}
-                                        bg-red-100 text-red-700
-                                    {% endif %}"
-                                                     style="flex-grow: 0; width: fit-content; max-width: max-content; white-space: nowrap;">
+                                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium"
+                                      style="flex-grow: 0; width: fit-content; max-width: max-content; white-space: nowrap;"
+                                        {% if i.status == 'draft' %}
+                                      class="bg-gray-100 text-gray-600"
+                                        {% elif i.status == 'published' %}
+                                      class="bg-green-100 text-green-700"
+                                        {% elif i.status == 'archived' %}
+                                      class="bg-yellow-100 text-yellow-800"
+                                        {% else %}
+                                      class="bg-red-100 text-red-700"
+                                        {% endif %}>
                                     <i class="fa-solid fa-earth-americas text-sm"></i>
                                     {% if i.status == 'draft' %}
                                         Riêng tư
@@ -100,17 +123,17 @@
                                 <div class="flex flex-wrap gap-2 mb-2">
                                     {% for tag in i.tags %}
                                         <span style="font-size: 10px" class="bg-blue-100 text-blue-800 font-semibold px-2.5 py-0.5 rounded mr-1 uppercase">
-                                        {{ tag.name }}
-                                      </span>
+                                            {{ tag.name }}
+                                        </span>
                                     {% endfor %}
                                 </div>
                                 <div class="flex justify-between items-center text-xs text-gray-500 mt-auto pt-2 border-t">
-                            <span class="flex items-center gap-1">
-                                <img src="{{ url_for('static', filename= i.user.avatar_url) }}" class="w-6 h-6 rounded-full"></i> {{ i.user.name }}
-                            </span>
+                                    <span class="flex items-center gap-1">
+                                        <img src="{{ url_for('static', filename= i.user.avatar_url) }}" class="w-6 h-6 rounded-full"> {{ i.user.name }}
+                                    </span>
                                     <span>
-                                <i class="far fa-clock mr-1"></i>{{ i.created_at.strftime('%d/%m/%Y %H:%M') }}
-                            </span>
+                                        <i class="far fa-clock mr-1"></i>{{ i.created_at.strftime('%d/%m/%Y %H:%M') }}
+                                    </span>
                                 </div>
                             </div>
                         </article>
@@ -126,10 +149,10 @@
                 <ul class="space-y-3 text-sm">
                     {% for i in postsView %}
                         <li>
-                            <a
-                                    href="/baiviet/{{ i.slug }}"
-                                    class="text-blue-600 hover:text-blue-800 hover:underline transition duration-200"
-                            >{{ i.title }}</a>
+                            <a href="/baiviet/{{ i.slug }}"
+                               class="text-blue-600 hover:text-blue-800 hover:underline transition duration-200">
+                                {{ i.title }}
+                            </a>
                         </li>
                     {% endfor %}
                 </ul>
@@ -140,10 +163,10 @@
                 <ul class="space-y-3 text-sm">
                     {% for i in posts[:3] %}
                         <li>
-                            <a
-                                    href="/baiviet/{{ i.slug }}"
-                                    class="text-blue-600 hover:text-blue-800 hover:underline transition duration-200"
-                            >{{ i.title }}</a>
+                            <a href="/baiviet/{{ i.slug }}"
+                               class="text-blue-600 hover:text-blue-800 hover:underline transition duration-200">
+                                {{ i.title }}
+                            </a>
                         </li>
                     {% endfor %}
                 </ul>
@@ -164,7 +187,6 @@
             <i class="fa-brands fa-rocketchat"></i>
         </button>
 
-
         <!-- Chat Dialog -->
         <div id="chat-dialog" class="fixed hidden bottom-20 right-6 w-96 bg-white rounded-lg shadow-xl flex flex-col min-h-[500px] max-h-[500px] z-50" role="dialog" aria-labelledby="chat-title">
             <div class="bg-blue-600 text-white p-4 rounded-t-lg flex justify-between items-center">
@@ -176,30 +198,13 @@
             <div id="chat-messages" class="flex-1 p-4 overflow-y-auto space-y-4 bg-gray-50 max-h-[calc(100%-120px)]"></div>
             <form id="chat-form" class="p-4 border-t border-gray-200 bg-white rounded-lg">
                 <div class="flex space-x-2 relative">
-                    <button
-                            type="button"
-                            id="emoji-toggle"
-                            class="p-2 text-gray-600 hover:text-blue-600"
-                            aria-label="Mở bảng chọn emoji"
-                    >
-                        <i class="fas fa-smile"></i> <!-- Icon mặt cười từ Font Awesome -->
+                    <button type="button" id="emoji-toggle" class="p-2 text-gray-600 hover:text-blue-600" aria-label="Mở bảng chọn emoji">
+                        <i class="fas fa-smile"></i>
                     </button>
-                    <input
-                            type="text"
-                            id="chat-input"
-                            placeholder="Nhập tin nhắn..."
-                            class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
-                            required
-                    />
-                    <button
-                            type="submit"
-                            class="bg-blue-600 text-white w-10 h-10 rounded-lg hover:bg-blue-700 transition duration-200"
-                            aria-label="Gửi tin nhắn"
-                    >
-                            <i class="fa fa-paper-plane"></i>
-
+                    <input type="text" id="chat-input" placeholder="Nhập tin nhắn..." class="flex-1 p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm" required>
+                    <button type="submit" class="bg-blue-600 text-white w-10 h-10 rounded-lg hover:bg-blue-700 transition duration-200" aria-label="Gửi tin nhắn">
+                        <i class="fa fa-paper-plane"></i>
                     </button>
-                    <!-- Container cho emoji picker -->
                     <div id="emoji-picker-container" class="absolute hidden z-10 top-[-400px] left-0">
                         <emoji-picker></emoji-picker>
                     </div>
@@ -208,32 +213,87 @@
         </div>
     </main>
 
+    <!-- Thêm Swiper CSS và JS -->
+    <link rel="stylesheet" href="https://unpkg.com/swiper/swiper-bundle.min.css" />
+    <style>
+        .swiper-button-next,
+        .swiper-button-prev {
+            width: 30px;
+            height: 30px;
+            background-size: 20px 20px;
+        }
+
+        .swiper-button-next {
+            right: 10px;
+        }
+
+        .swiper-button-prev {
+            left: 10px;
+        }
+
+        .swiper-button-next::after,
+        .swiper-button-prev::after {
+            font-size: 12px;
+        }
+    </style>
+    <script src="https://unpkg.com/swiper/swiper-bundle.min.js"></script>
+
+    <!-- Khởi tạo Swiper -->
     <script>
-        // Lấy các phần tử
+        const swiper = new Swiper('.swiper', {
+            loop: true,
+            slidesPerView: 1,
+            spaceBetween: 10,
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+            breakpoints: {
+                640: {
+                    slidesPerView: 1,
+                    spaceBetween: 20,
+                },
+                768: {
+                    slidesPerView: 1,
+                    spaceBetween: 30,
+                },
+            },
+        });
+    </script>
+
+    <!-- Script cho Emoji Picker -->
+    <script>
         const emojiToggle = document.getElementById('emoji-toggle');
         const emojiPickerContainer = document.getElementById('emoji-picker-container');
         const chatInput = document.getElementById('chat-input');
 
-        // Hiển thị/ẩn emoji picker
         emojiToggle.addEventListener('click', () => {
             emojiPickerContainer.classList.toggle('hidden');
         });
 
-        // Xử lý khi chọn emoji
         const picker = document.querySelector('emoji-picker');
         picker.addEventListener('emoji-click', (event) => {
-            chatInput.value += event.detail.unicode; // Chèn emoji vào ô input
-            emojiPickerContainer.classList.add('hidden'); // Ẩn picker sau khi chọn
-            chatInput.focus(); // Đưa con trỏ về ô input
+            chatInput.value += event.detail.unicode;
+            emojiPickerContainer.classList.add('hidden');
+            chatInput.focus();
         });
 
-        // Ẩn picker khi nhấp ra ngoài
         document.addEventListener('click', (event) => {
             if (!emojiPickerContainer.contains(event.target) && !emojiToggle.contains(event.target)) {
                 emojiPickerContainer.classList.add('hidden');
             }
         });
     </script>
+
+    <!-- Script cho form tìm kiếm -->
     <script>
         const form = document.querySelector('form[action="/tim-kiem"]');
         const input = form.querySelector('input[name="keyword"]');
@@ -241,8 +301,8 @@
         form.addEventListener('submit', function (e) {
             const value = input.value.trim();
             if (value === '') {
-                e.preventDefault(); // Ngăn không cho submit
-                input.focus(); // Focus vào ô input
+                e.preventDefault();
+                input.focus();
             }
         });
     </script>

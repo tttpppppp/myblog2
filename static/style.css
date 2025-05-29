@@ -25,5 +25,25 @@
   overflow-y: auto;
 }
 article {
-  width: 490px;
+  width: 530px;
+}
+ .swiper-button-next,
+ .swiper-button-prev {
+   width: 30px; /* Giảm chiều rộng */
+   height: 30px; /* Giảm chiều cao */
+   background-size: 20px 20px; /* Giảm kích thước icon bên trong */
+ }
+
+.swiper-button-next {
+  right: 10px; /* Điều chỉnh vị trí bên phải */
+}
+
+.swiper-button-prev {
+  left: 10px; /* Điều chỉnh vị trí bên trái */
+}
+
+/* Tùy chọn: Ẩn icon nếu muốn thay bằng CSS khác */
+.swiper-button-next::after,
+.swiper-button-prev::after {
+  font-size: 12px; /* Giảm kích thước chữ/icon */
 }
