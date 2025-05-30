@@ -7,3 +7,4 @@ pytz
 python-slugify
 flask-sqlalchemy
 psycopg2-binary
+Flask-Mail

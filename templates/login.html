@@ -56,6 +56,16 @@
         </p>
 
         <form action = "/login" class="space-y-4" method="POST">
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="bg-green-100 text-green-800 p-3 rounded mb-4">
+                        {% for message in messages %}
+                            <p>{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
             {% if message %}
                 <div style="color: red;">{{ message }}</div>
             {% endif %}
@@ -93,7 +103,7 @@
                 >Ghi nhớ tôi</label
               >
             </div>
-            <a href="#" class="text-sm text-indigo-600 hover:text-indigo-500"
+            <a href="/forgot-password" class="text-sm text-indigo-600 hover:text-indigo-500"
               >Quên mật khẩu?</a
             >
           </div>

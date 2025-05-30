@@ -3,20 +3,33 @@ import uuid
 from datetime import date, datetime, timedelta, UTC
 from flask_apscheduler import APScheduler
 from flask_socketio import SocketIO, join_room
-from psycopg2._psycopg import IntegrityError
+from psycopg2 import IntegrityError
 from pytz import timezone
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_
 from werkzeug.utils import secure_filename
 import os
-from os import path
+from flask_mail import Message as MailMessage , Mail
 from flask_bcrypt import Bcrypt
 from slugify import slugify
 app = Flask(__name__)
+
+app.config['MAIL_SERVER'] = 'smtp.gmail.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USERNAME'] = 'despacitovv@gmail.com'
+app.config['MAIL_PASSWORD'] = 'gidk umyh klal pdwv'
+
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://admin:WJeYgQNQlYx2Wnh7I2o6lstiVYEkCHtp@dpg-d0m9kgjuibrs7388lc3g-a.oregon-postgres.render.com/myblogdb_i028'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'trantienphuc'
+
+
+mail = Mail(app)
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 scheduler = APScheduler()
@@ -39,6 +52,8 @@ class User(db.Model):
     comments = db.relationship('Comment', backref='user', lazy=True)
     messages = db.relationship('Message', back_populates='user', lazy='dynamic')
     notifications = db.relationship('Notification', back_populates='user', lazy='dynamic')
+    verifications = db.relationship("Verification", back_populates="user")
+
 class Category(db.Model):
     __tablename__ = 'categories'
 
@@ -130,6 +145,16 @@ class KhamPha(db.Model):
     user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
     user = db.relationship('User', backref='khamphas')
 
+class Verification(db.Model):
+    __tablename__ = 'veri'
+
+    id = db.Column(db.Integer, primary_key=True)
+    code = db.Column(db.String(100), nullable=False, unique=True)
+    expiry = db.Column(db.DateTime, nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=True)
+
+    user = db.relationship('User', back_populates='verifications')
+
 def create_default_categories():
     with app.app_context():
         if not Category.query.first():
@@ -167,9 +192,111 @@ def inject_categories():
     unread_count = Notification.query.filter_by(user_id=user_id, is_read=False).count()
     return dict(categories=categories ,notifications = notifications , unread_count = unread_count)
 
+def sendMail(content, title, recipient):
+    msg = MailMessage(
+        subject=title,
+        sender='despacitovv@gmail.com',
+        recipients=[recipient]
+    )
+    msg.body = content
+
+    try:
+        mail.send(msg)
+        return True
+    except Exception as e:
+        print(f"Gửi mail thất bại: {e}")
+        return False
+
+from flask import request, render_template, redirect, url_for, flash
+from werkzeug.security import generate_password_hash
+from datetime import datetime
+
+@app.route('/reset-password', methods=['GET', 'POST'])
+def reset_password():
+    if request.method == "GET":
+        code = request.args.get('code')
+        return render_template("reset_password.html", code=code)
+
+    # POST
+    code = request.form.get('code')
+    password = request.form.get('password')
+    confirm_password = request.form.get('confirm_password')
+
+    if password != confirm_password:
+        flash("Mật khẩu không khớp")
+        return redirect(url_for('reset_password', code=code))
+
+    print("Code nhận được POST:", code)
+    veri = Verification.query.filter_by(code=code).first()
+    if veri is None:
+        flash("Mã xác thực không hợp lệ")
+        return redirect(url_for('reset_password', code=code))
+
+    if veri.expiry < datetime.utcnow():
+        flash("Mã xác thực đã hết hạn")
+        return redirect(url_for('reset_password', code=code))
+
+    user = User.query.get(veri.user_id)
+    if user is None:
+        flash("Người dùng không tồn tại")
+        return redirect(url_for('reset_password', code=code))
+
+    user.password = bcrypt.generate_password_hash(password).decode('utf-8')
+    db.session.commit()
+    db.session.delete(veri)
+    db.session.commit()
+
+    flash("Đặt lại mật khẩu thành công, bạn có thể đăng nhập lại.")
+    return redirect(url_for('login'))
+
+
 @app.route('/' , methods=['GET'])
 def index():
     return render_template("hub.html")
+@app.route("/forgot-password", methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == "GET":
+        return render_template("quenmatkhau.html")
+    email = request.form.get('email')
+    if not email:
+        return render_template("quenmatkhau.html", message="Vui lòng nhập email")
+
+    user = User.query.filter_by(email=email).first()
+    if not user:
+        return render_template("quenmatkhau.html", message="Nếu email này tồn tại, chúng tôi sẽ gửi link đặt lại mật khẩu")
+
+    code = str(uuid.uuid4())
+    expiry_time = datetime.utcnow() + timedelta(minutes=15)
+
+    veri = Verification(code=code, expiry=expiry_time , user_id=user.id)
+    db.session.add(veri)
+    db.session.commit()
+
+
+    reset_link = url_for("reset_password", code=code, _external=True)
+
+    subject = "MyBlog - Cập nhật lại mật khẩu"
+    body = f"""
+    Xin chào {user.name},
+
+    Bạn hoặc ai đó đã yêu cầu đặt lại mật khẩu cho tài khoản MyBlog của bạn.
+    Vui lòng nhấp vào liên kết bên dưới để đặt lại mật khẩu. Liên kết này chỉ có hiệu lực trong 15 phút.
+
+    {reset_link}
+
+    Nếu bạn không yêu cầu đặt lại mật khẩu, bạn có thể bỏ qua email này.
+
+    Trân trọng,
+    Ban quản trị MyBlog
+    """
+
+    is_success = sendMail(body , subject, user.email)
+    if is_success:
+        return render_template("quenmatkhau.html", message="Chúng tôi đã gửi liên kết xác thực đến email của bạn")
+    else:
+        return render_template("quenmatkhau.html", message="Gửi xác thực thất bại, vui lòng thử lại sau")
+
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
@@ -245,7 +372,6 @@ def tim_kiem():
         ).all()
 
     return render_template('timkiem.html', keyword=keyword, ketqua=ketqua)
-
 @app.route('/logout')
 def logout():
     session.pop('user', None)
