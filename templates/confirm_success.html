@@ -1,25 +1,33 @@
 <!DOCTYPE html>
-<!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Xác thực</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center">
-<div class="w-full max-w-md p-6 bg-white rounded-lg shadow-lg text-center">
-    <h1 class="text-2xl font-bold text-gray-900 mb-4">My Blog</h1>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center px-4">
+<div class="w-full max-w-md bg-white p-6 rounded-lg shadow text-center">
+    <h1 class="text-3xl font-bold text-gray-900 mb-6">My Blog</h1>
+
     {% with messages = get_flashed_messages() %}
         {% if messages %}
-            <div class="mb-4 text-red-600">
-                {% for message in messages %}
-                    <p>{{ message }}</p>
-                {% endfor %}
+            <div class="flex items-start bg-red-50 border border-red-200 text-red-800 p-4 rounded mb-6">
+                <svg class="w-5 h-5 mt-1 mr-2 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728"/>
+                </svg>
+                <div class="text-left space-y-1 text-sm">
+                    {% for message in messages %}
+                        <p>{{ message }}</p>
+                    {% endfor %}
+                </div>
             </div>
         {% endif %}
     {% endwith %}
-    <a href="#" class="mt-4 inline-block text-blue-600 hover:underline">Quay lại đăng nhập</a>
+
+    <a href="#" class="text-blue-600 hover:underline text-sm">← Quay lại đăng nhập</a>
 </div>
 </body>
 </html>
