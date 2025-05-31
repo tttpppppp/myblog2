@@ -208,9 +208,6 @@ def sendMail(content, title, recipient):
         print(f"Gửi mail thất bại: {e}")
         return False
 
-from flask import request, render_template, redirect, url_for, flash
-from werkzeug.security import generate_password_hash
-from datetime import datetime
 
 @app.route('/reset-password', methods=['GET', 'POST'])
 def reset_password():
@@ -250,12 +247,10 @@ def reset_password():
     flash("Đặt lại mật khẩu thành công, bạn có thể đăng nhập lại.")
     return redirect(url_for('login'))
 
-
 @app.route('/' , methods=['GET'])
 def index():
     return render_template("hub.html")
 @app.route("/forgot-password", methods=['GET', 'POST'])
-
 def forgot_password():
     if request.method == "GET":
         return render_template("quenmatkhau.html")
@@ -297,8 +292,9 @@ def forgot_password():
         return render_template("quenmatkhau.html", message="Chúng tôi đã gửi liên kết xác thực đến email của bạn")
     else:
         return render_template("quenmatkhau.html", message="Gửi xác thực thất bại, vui lòng thử lại sau")
-@app.route('/confirm', methods=['GET'])
 
+
+@app.route('/confirm', methods=['GET'])
 def confirmRegister():
     code = request.args.get('code')
     veri = Verification.query.filter_by(code=code).first()
@@ -320,8 +316,36 @@ def confirmRegister():
     db.session.commit()
     flash("Xác thực thành công")
     return render_template("confirm_success.html")
-@app.route('/register', methods=['GET', 'POST'])
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        check = deniUrl()
+        if check:
+            return check
+        return render_template("login.html")
+
+    # POST
+    email = request.form.get('email')
+    password = request.form.get('password')
+
+    if not email or not password:
+        return render_template("login.html", message="Vui lòng nhập email và mật khẩu")
+
+    user = User.query.filter_by(email=email).first()
+    if user.status == "inactive":
+        return render_template("login.html", message="Vui lòng xác thực tài khoản")
+    if user and bcrypt.check_password_hash(user.password, password):
+        session['user'] = {
+            'id': user.id,
+            'username': user.name,
+            'image_url': user.avatar_url,
+        }
+        return redirect(url_for("hub"))
+
+    return render_template("login.html", message="Sai email hoặc mật khẩu")
+
+@app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'GET':
         check = deniUrl()
@@ -382,7 +406,7 @@ def register():
     except IntegrityError:
         db.session.rollback()
         return render_template("register.html", message="Email đã tồn tại")
-   
+
 @app.route('/tim-kiem')
 def tim_kiem():
     keyword = request.args.get('keyword', '').strip()
