@@ -47,6 +47,7 @@ class User(db.Model):
     avatar_url = db.Column(db.String(255))
     bio = db.Column(db.Text)
     joined_date = db.Column(db.Date, default=date.today)
+    status = db.Column(db.String(50), default='inactive')
 
     posts = db.relationship('Post', backref='user', lazy=True)
     comments = db.relationship('Comment', backref='user', lazy=True)
@@ -254,6 +255,7 @@ def reset_password():
 def index():
     return render_template("hub.html")
 @app.route("/forgot-password", methods=['GET', 'POST'])
+
 def forgot_password():
     if request.method == "GET":
         return render_template("quenmatkhau.html")
@@ -295,35 +297,31 @@ def forgot_password():
         return render_template("quenmatkhau.html", message="Chúng tôi đã gửi liên kết xác thực đến email của bạn")
     else:
         return render_template("quenmatkhau.html", message="Gửi xác thực thất bại, vui lòng thử lại sau")
+@app.route('/confirm', methods=['GET'])
 
+def confirmRegister():
+    code = request.args.get('code')
+    veri = Verification.query.filter_by(code=code).first()
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'GET':
-        check = deniUrl()
-        if check:
-            return check
-        return render_template("login.html")
+    if veri is None:
+        message = "Mã xác thực không hợp lệ"
+        return render_template("confirm_fail.html", message=message)
 
-    # POST
-    email = request.form.get('email')
-    password = request.form.get('password')
+    if veri.expiry < datetime.utcnow():
+        message = "Mã xác thực đã hết hạn"
+        return render_template("confirm_fail.html", message=message)
 
-    if not email or not password:
-        return render_template("login.html", message="Vui lòng nhập email và mật khẩu")
+    user = User.query.get(veri.user_id)
+    if user is None:
+        message = "Người dùng không tồn tại"
+        return render_template("confirm_fail.html", message=message)
 
-    user = User.query.filter_by(email=email).first()
-    if user and bcrypt.check_password_hash(user.password, password):
-        session['user'] = {
-            'id': user.id,
-            'username': user.name,
-            'image_url': user.avatar_url,
-        }
-        return redirect(url_for("hub"))
-
-    return render_template("login.html", message="Sai email hoặc mật khẩu")
-
+    user.status = "active"
+    db.session.commit()
+    flash("Xác thực thành công")
+    return render_template("confirm_success.html")
 @app.route('/register', methods=['GET', 'POST'])
+
 def register():
     if request.method == 'GET':
         check = deniUrl()
@@ -353,11 +351,38 @@ def register():
     try:
         db.session.add(user)
         db.session.commit()
+
+        code = str(uuid.uuid4())
+        expiry_time = datetime.utcnow() + timedelta(minutes=15)
+
+        veri = Verification(code=code, expiry=expiry_time , user_id=user.id)
+        db.session.add(veri)
+        db.session.commit()
+
+        reset_link = url_for("confirmRegister", code=code, _external=True)
+
+        subject = "MyBlog - Xác thực tài khoản"
+        body = f"""
+        Xin chào {user.name},
+    
+        Vui lòng nhấp vào liên kết bên dưới để đặt xác thực tài khoản. 
+    
+        {reset_link}
+    
+    
+        Trân trọng,
+        Ban quản trị MyBlog
+        """
+        is_success = sendMail(body , subject, user.email)
+        if is_success:
+            return render_template("register.html", message="Chúng tôi đã gửi liên kết xác thực đến email của bạn")
+        else:
+            return render_template("register.html", message="Gửi xác thực thất bại, vui lòng thử lại sau")
+
     except IntegrityError:
         db.session.rollback()
         return render_template("register.html", message="Email đã tồn tại")
-
-    return redirect(url_for('login'))
+   
 @app.route('/tim-kiem')
 def tim_kiem():
     keyword = request.args.get('keyword', '').strip()
