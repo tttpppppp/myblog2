@@ -457,6 +457,8 @@ def login():
         return render_template("login.html", message="Vui lòng nhập email và mật khẩu")
 
     user = User.query.filter_by(email=email).first()
+    if not user:
+         return render_template("login.html", message="Tài khoản không tồn tại")
     if user.status == "inactive":
         return render_template("login.html", message="Vui lòng xác thực tài khoản")
     if user.status == "banned":
