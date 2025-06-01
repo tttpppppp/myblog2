@@ -1,0 +1,48 @@
+{% extends "admin/base.html" %}
+
+{% block title %}DashBoard{% endblock %}
+
+{% block content %}
+    <h2 class="text-lg font-semibold mb-4">Quick Stats</h2>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+                class="bg-white p-6 rounded-lg shadow hover:shadow-md transition"
+        >
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-gray-500">Người dùng</span>
+                <i class="ti ti-users text-2xl text-primary"></i>
+            </div>
+            <h3 class="text-2xl font-bold">{{ usersCount }}</h3>
+        </div>
+
+        <div
+                class="bg-white p-6 rounded-lg shadow hover:shadow-md transition"
+        >
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-gray-500">Bài viết</span>
+                <i class="ti ti-mail text-2xl text-primary"></i>
+            </div>
+            <h3 class="text-2xl font-bold">{{ postsCount }}</h3>
+        </div>
+
+        <div
+                class="bg-white p-6 rounded-lg shadow hover:shadow-md transition"
+        >
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-gray-500">Số lượt truy cập</span>
+                <i class="ti ti-device-desktop text-2xl text-primary"></i>
+            </div>
+            <h3 class="text-2xl font-bold">{{ visits }}</h3>
+        </div>
+    </div>
+
+    <!-- Placeholder content -->
+    <div class="mt-8 bg-white rounded-lg shadow p-6">
+        <h3 class="text-lg font-semibold mb-2">Recent Activity</h3>
+        <p class="text-sm text-gray-600">
+            You can list recent user actions, logs, or messages here.
+        </p>
+    </div>
+{% endblock %}

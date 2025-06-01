@@ -1,6 +1,8 @@
 import time
 import uuid
 from datetime import date, datetime, timedelta, UTC
+from functools import wraps
+
 from flask_apscheduler import APScheduler
 from flask_socketio import SocketIO, join_room
 from psycopg2 import IntegrityError
@@ -36,7 +38,6 @@ scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
-
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -48,12 +49,25 @@ class User(db.Model):
     bio = db.Column(db.Text)
     joined_date = db.Column(db.Date, default=date.today)
     status = db.Column(db.String(50), default='inactive')
+    role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
 
     posts = db.relationship('Post', backref='user', lazy=True)
     comments = db.relationship('Comment', backref='user', lazy=True)
-    messages = db.relationship('Message', back_populates='user', lazy='dynamic')
+    messages = db.relationship('Message', back_populates='user',cascade='all, delete-orphan',passive_deletes=True
+    )
     notifications = db.relationship('Notification', back_populates='user', lazy='dynamic')
     verifications = db.relationship("Verification", back_populates="user")
+    khamphas = db.relationship('KhamPha', backref='user', cascade="all, delete", passive_deletes=True)
+    role = db.relationship('Role', back_populates='users')
+
+class Role(db.Model):
+    __tablename__ = 'roles'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String(50), unique=True, nullable=False)  # ví dụ: 'admin', 'editor', 'user'
+    description = db.Column(db.String(255))
+
+    users = db.relationship('User', back_populates='role')
 
 class Category(db.Model):
     __tablename__ = 'categories'
@@ -80,7 +94,12 @@ class Post(db.Model):
     deleted_at = db.Column(db.DateTime, nullable=True)
     post_categories = db.relationship('PostCategory', backref='post', cascade="all, delete-orphan", lazy=True)
     comments = db.relationship('Comment', backref='post', cascade="all, delete-orphan", lazy='dynamic')
-    tags = db.relationship('Tag', secondary='post_tags', back_populates='posts')
+    post_tags = db.relationship(
+        'PostTag',
+        back_populates='post',
+        cascade="all, delete-orphan",
+        lazy=True
+    )
     notifications = db.relationship('Notification', back_populates='post')
 
 class PostCategory(db.Model):
@@ -104,19 +123,28 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(50), unique=True, nullable=False)
 
-    posts = db.relationship('Post', secondary='post_tags', back_populates='tags')
+    post_tags = db.relationship(
+        'PostTag',
+        back_populates='tag',
+        cascade="all, delete-orphan",
+        lazy=True
+    )
 
 class PostTag(db.Model):
     __tablename__ = 'post_tags'
 
-    post_id = db.Column(db.Integer, db.ForeignKey('posts.id' , ondelete='CASCADE'), primary_key=True)
-    tag_id = db.Column(db.Integer, db.ForeignKey('tags.id' , ondelete='CASCADE'), primary_key=True)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
+    tag_id = db.Column(db.Integer, db.ForeignKey('tags.id'), primary_key=True)
+
+    post = db.relationship('Post', back_populates='post_tags')
+    tag = db.relationship('Tag', back_populates='post_tags')
 
 class Message(db.Model):
     __tablename__ = 'messages'
 
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
-    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+
     content = db.Column(db.Text, nullable=False)
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship('User', back_populates='messages')
@@ -143,8 +171,7 @@ class KhamPha(db.Model):
     description = db.Column(db.Text, nullable=True)
     filename = db.Column(db.String(255), nullable=False)  # Tên tệp video
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
-    user = db.relationship('User', backref='khamphas')
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
 
 class Verification(db.Model):
     __tablename__ = 'veri'
@@ -155,6 +182,32 @@ class Verification(db.Model):
     user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=True)
 
     user = db.relationship('User', back_populates='verifications')
+
+class Visit(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    count = db.Column(db.Integer, default=0)
+
+@app.before_request
+def count_visit():
+    if request.endpoint != 'static':  # Bỏ qua static file
+        visit = Visit.query.first()
+        if not visit:
+            visit = Visit(count=1)
+            db.session.add(visit)
+        else:
+            visit.count += 1
+        db.session.commit()
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        user = session.get('user')
+        if not user or user.get('role') != 'ADMIN':
+            return render_template("forbidden.html")
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 def create_default_categories():
     with app.app_context():
@@ -208,7 +261,6 @@ def sendMail(content, title, recipient):
         print(f"Gửi mail thất bại: {e}")
         return False
 
-
 @app.route('/reset-password', methods=['GET', 'POST'])
 def reset_password():
     if request.method == "GET":
@@ -247,6 +299,79 @@ def reset_password():
     flash("Đặt lại mật khẩu thành công, bạn có thể đăng nhập lại.")
     return redirect(url_for('login'))
 
+
+@app.route("/dashboard")
+@admin_required
+def dashboard():
+    usersCount = User.query.count()
+    postsCount = Post.query.count()
+    visits = Visit.query.first().count
+    return render_template("admin/dashboard.html", usersCount=usersCount, postsCount=postsCount , visits=visits )
+@app.route("/users")
+@admin_required
+def manage_users():
+    users = User.query.all()
+    return render_template("admin/user.html" , users=users)
+
+@app.route("/roles")
+@admin_required
+def manage_roles():
+    roles = Role.query.all()
+    return render_template("admin/role.html" , roles=roles)
+@app.route("/admin/user/delete/<string:user_id>")
+@admin_required
+def delete_user(user_id):
+    user = User.query.get(user_id)
+    if not user:
+        flash("Người dùng không tồn tại", "danger")
+    elif user.status == "banned":
+        flash("Người dùng đã bị cấm trước đó", "warning")
+    else:
+        user.status = "banned"
+        db.session.commit()
+        flash("Đã cấm người dùng thành công", "success")
+
+    return redirect(url_for('manage_users'))
+
+@app.route("/admin/post/delete/<int:post_id>")
+@admin_required
+def delete_post(post_id):
+    post = Post.query.get(post_id)
+    if not post:
+        flash("Bài viết không tồn tại", "danger")
+        return redirect(url_for('posts'))
+
+    db.session.delete(post)
+    db.session.commit()
+    flash("Đã xóa bài viết thành công", "success")
+    return redirect(url_for('posts'))
+
+
+@app.route('/admin/role/create', methods=['GET', 'POST'])
+@admin_required
+def create_role():
+    if request.method == 'POST':
+        name = request.form.get('name')
+        description = request.form.get('description')
+        existing_role = Role.query.filter_by(name=name).first()
+        if existing_role:
+            flash('Tên vai trò đã tồn tại.', 'error')
+            return render_template('admin/form_role.html')
+
+
+        new_role = Role(name=name, description=description)
+        db.session.add(new_role)
+        db.session.commit()
+        flash('Thêm vai trò thành công!', 'success')
+        return redirect(url_for('manage_roles'))
+
+    return render_template('admin/form_role.html')
+
+
+@app.route("/posts")
+def posts():
+    posts = Post.query.all()
+    return render_template("admin/post.html" , posts=posts)
 @app.route('/' , methods=['GET'])
 def index():
     return render_template("hub.html")
@@ -293,7 +418,6 @@ def forgot_password():
     else:
         return render_template("quenmatkhau.html", message="Gửi xác thực thất bại, vui lòng thử lại sau")
 
-
 @app.route('/confirm', methods=['GET'])
 def confirmRegister():
     code = request.args.get('code')
@@ -335,16 +459,18 @@ def login():
     user = User.query.filter_by(email=email).first()
     if user.status == "inactive":
         return render_template("login.html", message="Vui lòng xác thực tài khoản")
+    if user.status == "banned":
+        return render_template("login.html", message="Tài khoản của bạn đã khóa vì vi phạm nguyên tắc cộng đồng!")
     if user and bcrypt.check_password_hash(user.password, password):
         session['user'] = {
             'id': user.id,
             'username': user.name,
             'image_url': user.avatar_url,
+            'role' : user.role.name
         }
         return redirect(url_for("hub"))
 
     return render_template("login.html", message="Sai email hoặc mật khẩu")
-
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'GET':
@@ -370,7 +496,7 @@ def register():
         return render_template("register.html", message="Email đã được sử dụng")
 
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-    user = User(name=name, email=email, password=hashed_password, mobile=mobile, avatar_url=image)
+    user = User(name=name, email=email, password=hashed_password, mobile=mobile, avatar_url=image , role_id = 2)
 
     try:
         db.session.add(user)
@@ -388,12 +514,12 @@ def register():
         subject = "MyBlog - Xác thực tài khoản"
         body = f"""
         Xin chào {user.name},
-    
-        Vui lòng nhấp vào liên kết bên dưới để đặt xác thực tài khoản. 
-    
+
+        Vui lòng nhấp vào liên kết bên dưới để đặt xác thực tài khoản.
+
         {reset_link}
-    
-    
+
+
         Trân trọng,
         Ban quản trị MyBlog
         """
@@ -457,7 +583,8 @@ def category(slug):
 @app.route('/baiviet/<string:slug>')
 def post(slug):
     baiviet = Post.query.filter(Post.slug == slug, Post.deleted_at == None).first_or_404()
-    tags = baiviet.tags
+    tags = [pt.tag for pt in baiviet.post_tags]
+
     comments = baiviet.comments.order_by(Comment.created_at.desc()).all()
     current_category_ids = [pc.category_id for pc in baiviet.post_categories]
     related_posts = Post.query.join(PostCategory).filter(

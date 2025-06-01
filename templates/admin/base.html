@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Trang mặc định{% endblock %}</title>
+    <link rel="icon" href="https://myblog2-400d.onrender.com/static/images/logoicon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: "#4f46e5",
+                        light: "#f9fafb",
+                    },
+                },
+            },
+        };
+    </script>
+    <link
+            href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css"
+            rel="stylesheet"
+    />
+</head>
+<body class="bg-light text-gray-800">
+<div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-md border-r">
+        <div class="p-6 text-2xl font-bold text-primary border-b">
+            <i class="ti ti-layout-dashboard mr-2"></i> MyBlog
+        </div>
+        <nav class="p-4 space-y-2 text-sm">
+            <a href="/dashboard" class="flex items-center p-2 rounded hover:bg-gray-100">
+                <i class="ti ti-home mr-3 text-primary"></i> Dashboard
+            </a>
+            <a href="/users" class="flex items-center p-2 rounded hover:bg-gray-100">
+                <i class="ti ti-users mr-3 text-primary"></i> Users
+            </a>
+            <a href="/roles" class="flex items-center p-2 rounded hover:bg-gray-100">
+                <i class="ti ti-mail mr-3 text-primary"></i> Roles
+            </a>
+            <a href="/posts" class="flex items-center p-2 rounded hover:bg-gray-100">
+                <i class="ti ti-mail mr-3 text-primary"></i> Posts
+            </a>
+
+            <a href="#" class="flex items-center p-2 rounded hover:bg-gray-100">
+                <i class="ti ti-settings mr-3 text-primary"></i> Settings
+            </a>
+        </nav>
+    </aside>
+
+    <!-- Main content -->
+    <div class="flex-1 flex flex-col">
+        <!-- Header -->
+        <header
+                class="bg-white shadow-sm p-4 flex justify-between items-center border-b"
+        >
+            <h1 class="text-xl font-semibold">Dashboard</h1>
+            <div class="flex items-center space-x-4">
+                <span class="text-sm text-gray-500">{{ session['user']['role'] }}</span>
+
+                <img
+                        src="https://i.pravatar.cc/40"
+                        class="w-8 h-8 rounded-full"
+                        alt="avatar"
+                />
+            </div>
+        </header>
+
+        <!-- Content -->
+        <main class="p-6 bg-light flex-1">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</div>
+</body>
+</html>

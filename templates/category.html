@@ -41,30 +41,27 @@
             {% if posts|length > 0 %}
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
                     {% for i in posts %}
-                        <a href="/baiviet/{{ i.slug }}">
-                            <div class="bg-white border rounded-lg shadow hover:shadow-lg transition overflow-hidden flex flex-col h-full">
-                                <img src="{{ url_for('static', filename= i.thumbnail_url)}}"
-                                     class="w-full h-48 object-cover" />
-                                <div class="p-5 flex flex-col justify-between flex-1">
-                                    <h3 class="text-lg font-semibold text-gray-800 mb-2 hover:text-blue-600 transition">
-                                        {{ i.title }}
-                                    </h3>
-                                    <p class="text-gray-600 text-sm mb-3 line-clamp-2">
-                                        {{ i.description|safe }}
-                                    </p>
-                                    <div class="flex flex-wrap gap-2 mb-2">
-
-                                        {% for tag in i.tags %}
-                                            <span style="font-size: 10px" class="bg-blue-100 text-blue-800 font-semibold px-2.5 py-0.5 rounded mr-1 uppercase">
-                                        {{ tag.name }}
-                                      </span>
-                                        {% endfor %}
-
-                                    </div>
-                                    <div class="flex justify-between text-sm text-gray-500 mt-auto">
-                                        <span>{{ i.user.name if i.user else 'Unknown author' }}</span>
-                                        <span>{{ i.created_at.strftime('%d/%m/%Y %H:%M') }}</span>
-                                    </div>
+                        <a href="/baiviet/{{ i.slug }}" class="group bg-white shadow rounded-lg overflow-hidden transition hover:shadow-md flex flex-col">
+                            <img src="{{ url_for('static', filename=i.thumbnail_url) }}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
+                            <div class="p-4 flex flex-col flex-1">
+                                <h3 class="text-lg font-bold text-gray-900 mb-1 group-hover:text-blue-600 transition">
+                                    {{ i.title }}
+                                </h3>
+                                <p class="text-sm text-gray-600 mb-3 line-clamp-2">
+                                    {{ i.description|safe }}
+                                </p>
+                                <!-- Tags -->
+                                <div class="flex flex-wrap gap-2 mb-3"> {% for t in i.post_tags %} <span class="bg-blue-100 text-blue-800 text-xs font-medium px-2 py-0.5 rounded uppercase">
+                                {{ t.tag.name }}
+                            </span> {% endfor %} </div>
+                                <!-- Footer: Tác giả + Ngày -->
+                                <div class="flex justify-between items-center text-xs text-gray-500 mt-auto pt-2 border-t">
+                            <span class="flex items-center gap-1">
+                                <img src="{{ url_for('static', filename= i.user.avatar_url) }}" class="w-6 h-6 rounded-full"></i> {{ i.user.name }}
+                            </span>
+                                    <span>
+                                <i class="far fa-clock mr-1"></i>{{ i.created_at.strftime('%d/%m/%Y %H:%M') }}
+                            </span>
                                 </div>
                             </div>
                         </a>
