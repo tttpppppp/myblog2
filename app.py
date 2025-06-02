@@ -775,7 +775,9 @@ def editPost(slug):
         abort(403)
     if request.method == 'GET':
         selected_category_ids = [pc.category_id for pc in post.post_categories]
-        tag_string = ", ".join([tag.name for tag in post.tags])
+        tag_string = ", ".join([post_tag.tag.name for post_tag in post.post_tags])
+
+
         categories = Category.query.all()
         return render_template("baivietedit.html", post=post,
                                selected_category_ids=selected_category_ids,
@@ -799,13 +801,14 @@ def editPost(slug):
     # Cập nhật tags
     tags = request.form.get('tags', '')
     tag_list = [t.strip().lower() for t in tags.split(',') if t.strip()]
-    post.tags.clear()
+    post.post_tags.clear()
     for tag_name in tag_list:
         tag = Tag.query.filter_by(name=tag_name).first()
         if not tag:
             tag = Tag(name=tag_name)
             db.session.add(tag)
-        post.tags.append(tag)
+        post_tag = PostTag(post_id=post.id, tag_id=tag.id)
+        post.post_tags.append(post_tag)
 
     # Cập nhật ảnh nếu có
     image = request.files.get('image')
