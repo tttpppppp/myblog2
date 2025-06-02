@@ -27,31 +27,31 @@
 <div class="flex min-h-screen">
     <!-- Sidebar -->
     <aside class="w-64 bg-white shadow-md border-r">
-        <div class="p-6 text-2xl font-bold text-primary border-b">
+        <a href="/dashboard" class="p-6 text-2xl font-bold text-primary border-b block">
             <i class="ti ti-layout-dashboard mr-2"></i> MyBlog
-        </div>
+        </a>
         <nav class="p-4 space-y-2 text-sm">
             <a href="/dashboard" class="flex items-center p-2 rounded hover:bg-gray-100">
-                <i class="ti ti-home mr-3 text-primary"></i> Dashboard
+                <i class="ti ti-layout-dashboard mr-3 text-primary"></i> Dashboard
             </a>
             <a href="/users" class="flex items-center p-2 rounded hover:bg-gray-100">
-                <i class="ti ti-users mr-3 text-primary"></i> Người dùng
+                <i class="ti ti-user-circle mr-3 text-primary"></i> Người dùng
             </a>
             <a href="/categories" class="flex items-center p-2 rounded hover:bg-gray-100">
-                <i class="ti ti-mail mr-3 text-primary"></i> Danh mục
+                <i class="ti ti-category mr-3 text-primary"></i> Danh mục
             </a>
             <a href="/roles" class="flex items-center p-2 rounded hover:bg-gray-100">
-                <i class="ti ti-mail mr-3 text-primary"></i> Quyền
+                <i class="ti ti-shield-lock mr-3 text-primary"></i> Quyền
             </a>
             <a href="/posts" class="flex items-center p-2 rounded hover:bg-gray-100">
-                <i class="ti ti-mail mr-3 text-primary"></i> Bài viết
+                <i class="ti ti-article mr-3 text-primary"></i> Bài viết
             </a>
-
-            <a href="#" class="flex items-center p-2 rounded hover:bg-gray-100">
-                <i class="ti ti-settings mr-3 text-primary"></i> Settings
-            </a>
+            <button type="button" id="dangxuat" class="flex items-center p-2 rounded-lg text-gray-700 hover:bg-gray-100 hover:text-blue-600 transition duration-200 w-full text-left">
+                <i class="ti ti-logout mr-3 text-primary"></i> Đăng xuất
+            </button>
         </nav>
     </aside>
+
 
     <!-- Main content -->
     <div class="flex-1 flex flex-col">
@@ -61,8 +61,10 @@
         >
             <h1 class="text-xl font-semibold">Dashboard</h1>
             <div class="flex items-center space-x-4">
-                <span class="text-sm text-gray-500">{{ session['user']['role'] }}</span>
-
+               <div class="">
+                   <span class="text-sm text-gray-500">{{ session['user']['role'] }}</span>
+                   <p class="text-sm text-gray-500 font-bold">Hi, {{ session['user']['username'] }}</p>
+               </div>
                 <img
                         src="{{ url_for('static', filename= session['user'].get('image_url', 'images/avt.jpg')) }}"
                         class="w-8 h-8 rounded-full"
@@ -78,5 +80,36 @@
     </div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $('#dangxuat').click(function() {
+        Swal.fire({
+            title: "Bạn có muốn đăng xuất?",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Đăng xuất"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/logout`,
+                    type: 'GET',
+                    success: function(response) {
+                        window.location.href = '/login';
+                    },
+                    error: function() {
+                        Swal.fire(
+                            'Error!',
+                            'Có lỗi xảy ra khi xóa bài viết.',
+                            'error'
+                        );
+                    }
+                });
+            }
+        });
+    });
+</script>
 </body>
 </html>

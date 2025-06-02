@@ -359,6 +359,32 @@ def delete_post(post_id):
     flash("Đã xóa bài viết thành công", "success")
     return redirect(url_for('posts'))
 
+@app.route('/admin/role/edit/<int:role_id>', methods=['GET', 'POST'])
+def edit_role(role_id):
+    role = Role.query.get_or_404(role_id)
+
+    if request.method == 'POST':
+        role.name = request.form['name']
+        role.description = request.form['description']
+        db.session.commit()
+        flash('Cập nhật vai trò thành công!', 'success')
+        return redirect(url_for('manage_roles'))
+
+    return render_template('admin/editrole.html', role=role)
+
+@app.route('/admin/role/delete/<int:role_id>', methods=['GET'])
+def delete_role(role_id):
+    role = Role.query.get_or_404(role_id)
+    if role.users:
+        flash('Không thể xoá vì có người dùng đang sử dụng vai trò này.', 'error')
+        return redirect(url_for('manage_roles'))
+
+    db.session.delete(role)
+    db.session.commit()
+    flash('Đã xoá vai trò thành công!', 'success')
+    return redirect(url_for('manage_roles'))
+
+
 @app.route('/admin/role/create', methods=['GET', 'POST'])
 @admin_required
 def create_role():
