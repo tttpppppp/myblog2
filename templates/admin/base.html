@@ -35,13 +35,16 @@
                 <i class="ti ti-home mr-3 text-primary"></i> Dashboard
             </a>
             <a href="/users" class="flex items-center p-2 rounded hover:bg-gray-100">
-                <i class="ti ti-users mr-3 text-primary"></i> Users
+                <i class="ti ti-users mr-3 text-primary"></i> Người dùng
+            </a>
+            <a href="/categories" class="flex items-center p-2 rounded hover:bg-gray-100">
+                <i class="ti ti-mail mr-3 text-primary"></i> Danh mục
             </a>
             <a href="/roles" class="flex items-center p-2 rounded hover:bg-gray-100">
-                <i class="ti ti-mail mr-3 text-primary"></i> Roles
+                <i class="ti ti-mail mr-3 text-primary"></i> Quyền
             </a>
             <a href="/posts" class="flex items-center p-2 rounded hover:bg-gray-100">
-                <i class="ti ti-mail mr-3 text-primary"></i> Posts
+                <i class="ti ti-mail mr-3 text-primary"></i> Bài viết
             </a>
 
             <a href="#" class="flex items-center p-2 rounded hover:bg-gray-100">
@@ -61,7 +64,7 @@
                 <span class="text-sm text-gray-500">{{ session['user']['role'] }}</span>
 
                 <img
-                        src="https://i.pravatar.cc/40"
+                        src="{{ url_for('static', filename= session['user'].get('image_url', 'images/avt.jpg')) }}"
                         class="w-8 h-8 rounded-full"
                         alt="avatar"
                 />
@@ -74,5 +77,6 @@
         </main>
     </div>
 </div>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </body>
 </html>

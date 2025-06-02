@@ -7,9 +7,7 @@
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div
-                class="bg-white p-6 rounded-lg shadow hover:shadow-md transition"
-        >
+        <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-sm text-gray-500">Người dùng</span>
                 <i class="ti ti-users text-2xl text-primary"></i>
@@ -17,32 +15,84 @@
             <h3 class="text-2xl font-bold">{{ usersCount }}</h3>
         </div>
 
-        <div
-                class="bg-white p-6 rounded-lg shadow hover:shadow-md transition"
-        >
+        <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-sm text-gray-500">Bài viết</span>
                 <i class="ti ti-mail text-2xl text-primary"></i>
             </div>
-            <h3 class="text-2xl font-bold">{{ postsCount }}</h3>
+            <h3 class="text-2xl font-bold">{{ postsCount}}</h3>
         </div>
 
-        <div
-                class="bg-white p-6 rounded-lg shadow hover:shadow-md transition"
-        >
+        <div class="bg-white p-6 rounded-lg shadow hover:shadow-md transition">
             <div class="flex items-center justify-between mb-2">
                 <span class="text-sm text-gray-500">Số lượt truy cập</span>
                 <i class="ti ti-device-desktop text-2xl text-primary"></i>
             </div>
-            <h3 class="text-2xl font-bold">{{ visits }}</h3>
+            <h3 class="text-2xl font-bold">{{ visits}}</h3>
         </div>
     </div>
 
-    <!-- Placeholder content -->
+    <!-- Stats Chart -->
     <div class="mt-8 bg-white rounded-lg shadow p-6">
-        <h3 class="text-lg font-semibold mb-2">Recent Activity</h3>
-        <p class="text-sm text-gray-600">
-            You can list recent user actions, logs, or messages here.
-        </p>
+        <h3 class="text-lg font-semibold mb-4">Stats Overview</h3>
+        <div class="w-[600px]">
+            <canvas id="statsChart"></canvas>
+        </div>
     </div>
+
+
+    <!-- Load Chart.js from CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Chart Initialization Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const ctx = document.getElementById('statsChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Người dùng', 'Bài viết', 'Số lượt truy cập'],
+                    datasets: [{
+                        label: 'Quick Stats',
+                        data: [{{ usersCount }}, {{ postsCount }}, {{ visits }}],
+                        backgroundColor: [
+                            'rgba(59, 130, 246, 0.6)',
+                            'rgba(16, 185, 129, 0.6)',
+                            'rgba(245, 158, 11, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(59, 130, 246, 1)',
+                            'rgba(16, 185, 129, 1)',
+                            'rgba(245, 158, 11, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Số lượng'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Danh mục'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+
 {% endblock %}

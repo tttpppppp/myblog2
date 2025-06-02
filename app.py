@@ -2,6 +2,7 @@ import time
 import uuid
 from datetime import date, datetime, timedelta, UTC
 from functools import wraps
+from zoneinfo import ZoneInfo
 
 from flask_apscheduler import APScheduler
 from flask_socketio import SocketIO, join_room
@@ -9,7 +10,7 @@ from psycopg2 import IntegrityError
 from pytz import timezone
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify, abort, flash
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import or_
+from sqlalchemy import or_, desc
 from werkzeug.utils import secure_filename
 import os
 from flask_mail import Message as MailMessage , Mail
@@ -38,6 +39,7 @@ scheduler = APScheduler()
 scheduler.init_app(app)
 scheduler.start()
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
@@ -88,7 +90,11 @@ class Post(db.Model):
     content = db.Column(db.Text)
     thumbnail_url = db.Column(db.String(255))
     description = db.Column(db.String(255))
-    created_at = db.Column(db.DateTime, default=lambda: datetime.now(UTC))
+    created_at = db.Column(
+        db.DateTime(timezone=True),
+        default=lambda: datetime.now(ZoneInfo("Asia/Ho_Chi_Minh"))
+    )
+
     view_count = db.Column(db.Integer, default=0)
     status = db.Column(db.Enum('draft', 'published', 'archived', name='status_enum'), default='published')
     deleted_at = db.Column(db.DateTime, nullable=True)
@@ -318,6 +324,12 @@ def manage_users():
 def manage_roles():
     roles = Role.query.all()
     return render_template("admin/role.html" , roles=roles)
+
+@app.route("/categories")
+@admin_required
+def manage_categories():
+    categories = Category.query.all()
+    return render_template("admin/danhmuc.html" , categories=categories)
 @app.route("/admin/user/delete/<string:user_id>")
 @admin_required
 def delete_user(user_id):
@@ -370,8 +382,8 @@ def create_role():
 
 @app.route("/posts")
 def posts():
-    posts = Post.query.all()
-    return render_template("admin/post.html" , posts=posts)
+    posts = Post.query.order_by(desc(Post.created_at)).all()
+    return render_template("admin/post.html", posts=posts)
 @app.route('/' , methods=['GET'])
 def index():
     return render_template("hub.html")
@@ -458,7 +470,7 @@ def login():
 
     user = User.query.filter_by(email=email).first()
     if not user:
-         return render_template("login.html", message="Tài khoản không tồn tại")
+        return render_template("login.html", message="Tài khoản không tồn tại!")
     if user.status == "inactive":
         return render_template("login.html", message="Vui lòng xác thực tài khoản")
     if user.status == "banned":
