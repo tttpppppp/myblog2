@@ -1,194 +1,213 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block title %}{{baiviet.title}}{% endblock %} {%
+block meta %}
+<meta property="og:title" content="{{ baiviet.title }}" />
+<meta
+  property="og:description"
+  content="{{ baiviet.description or 'Tìm hiểu về bài viết thú vị này.' }}"
+/>
+<meta
+  property="og:image"
+  content="https://myblog2-400d.onrender.com/static/images/{{ baiviet.thumbnail_url }}"
+/>
+<meta property="fb:app_id" content="1055019773177537" />
+<meta property="og:url" content="{{ request.url }}" />
+<meta property="og:type" content="article" />
+{% endblock %} {% block content %}
+<main
+  class="container mx-auto max-w-7xl px-4 py-6 grid grid-cols-1 md:grid-cols-12 gap-6"
+>
+  <!-- Post Content -->
+  <section
+    class="md:col-span-9 post-container bg-white shadow-md p-6 rounded-lg"
+  >
+    <div class="post-content">
+      <h1 class="text-3xl font-bold text-gray-800 mb-4">{{ baiviet.title }}</h1>
+      <div class="flex flex-wrap gap-4 text-sm text-gray-500 mb-6">
+        <span>
+          <a href="/blogger/{{ baiviet.user.id }}" class="hover:text-blue-700"
+            >{{ baiviet.user.name }}</a
+          >
+        </span>
+        <span>{{ created_at_vn.strftime('%d/%m/%Y %H:%M') }}</span>
+        <span>
+          {% for i in baiviet.post_categories %}
+          <a
+            href="{{ url_for('category', slug=i.category.slug) }}"
+            class="text-blue-600 hover:underline"
+          >
+            <span class="me-2"> {{ i.category.name }}</span>
+          </a>
+          {% endfor %}
+        </span>
+        <span>Lượt xem: {{ baiviet.view_count }}</span>
+      </div>
+      <img
+        src="{{ url_for('static', filename= baiviet.thumbnail_url)}}"
+        class="w-full h-64 object-cover rounded-lg mb-6 post-image"
+      />
 
-{% block title %}{{baiviet.title}}{% endblock %}
-{% block meta %}
-    <meta property="og:title" content="{{ baiviet.title }}" />
-    <meta property="og:description" content="{{ baiviet.description or 'Tìm hiểu về bài viết thú vị này.' }}" />
-    <meta property="og:image" content="https://myblog2-400d.onrender.com/static/images/{{ baiviet.thumbnail_url }}" />
-    <meta property="fb:app_id" content="1055019773177537" />
-    <meta property="og:url" content="{{ request.url }}" />
-    <meta property="og:type" content="article" />
-{% endblock %}
-
-{% block content %}
-    <main
-            class="container mx-auto max-w-7xl px-4 py-6 grid grid-cols-1 md:grid-cols-12 gap-6"
-    >
-        <!-- Post Content -->
-        <section
-                class="md:col-span-9 post-container bg-white shadow-md p-6 rounded-lg"
+      <div class="prose prose-lg max-w-none text-gray-700">
+        {{ baiviet.content|safe }}
+      </div>
+      <div class="flex flex-wrap gap-2 mt-6 mb-6">
+        {% for tag in tags %}
+        <span
+          class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded mr-1 uppercase"
         >
-            <div class="post-content">
-                <h1 class="text-3xl font-bold text-gray-800 mb-4">
-                    {{ baiviet.title }}
-                </h1>
-                <div class="flex flex-wrap gap-4 text-sm text-gray-500 mb-6">
-            <span>
-              <a href="/blogger/{{ baiviet.user.id }}" class="hover:text-blue-700">{{ baiviet.user.name }}</a>
-            </span>
-                    <span>{{ created_at_vn.strftime('%d/%m/%Y %H:%M') }}</span>
-                    <span>
-            {% for i in baiviet.post_categories %}
-                <a href="{{ url_for('category', slug=i.category.slug) }}" class="text-blue-600 hover:underline">
-                   <span class="me-2"> {{ i.category.name }}</span>
-                </a>
-            {% endfor %}
-
-            </span>
-                    <span>Lượt xem: {{ baiviet.view_count }}</span>
-                </div>
-                <img src="{{ url_for('static', filename= baiviet.thumbnail_url)}}"  class="w-full h-64 object-cover rounded-lg mb-6 post-image">
-
-                <div class="prose prose-lg max-w-none text-gray-700">
-                    {{ baiviet.content|safe }}
-                </div>
-                <div class="flex flex-wrap gap-2 mt-6 mb-6">
-
-                    {% for tag in tags %}
-                        <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded mr-1 uppercase">
-                            {{ tag.name }}
-                          </span>
-                    {% endfor %}
-
-                </div>
-                <!-- Share Buttons -->
-                <div class="flex gap-4 mb-6">
-                    <button
-                            class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition duration-300"
-                            onclick="sharePost('https://myblog.com/post/hanoi')"
-                    >
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path
-                                    d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"
-                            />
-                        </svg>
-                        Chia Sẻ
-                    </button>
-                    <button
-                            class="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition duration-300"
-                            onclick="scrollToComments()"
-                    >
-                        <svg
-                                class="w-5 h-5"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                        >
-                            <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
-                            />
-                        </svg>
-                        Bình Luận
-                    </button>
-                </div>
-            </div>
-            <!-- Comments Section -->
-            <section id="comments" class="mt-8">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4">Bình Luận</h2>
-                <div id="comment-form" class="mb-6">
-                <textarea
-                        id="comment-content"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 mb-4"
-                        placeholder="Viết bình luận của bạn..."
-                        rows="4"
-                        required
-                ></textarea>
-                    <input type="hidden" id="post-id" name="post_id" value="{{ baiviet.id }}">
-                    <input type="hidden" id="user-id" name="user_id" value="{{ baiviet.user.id }}">
-                    <button type="button" id="submitComment"
-                            class="px-4 py-2 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition duration-300"
-                    >
-                        Gửi Bình Luận
-                    </button>
-                </div>
-                <div class="space-y-6" id="comment-list">
-                    {% if comments %}
-                        {% for comment in comments %}
-                            <div class="comment p-4 bg-gray-50 rounded-lg mb-4">
-                                <div class="flex items-center gap-3 mb-2">
-                                    <img
-                                            src="{{ url_for('static', filename= comment.user.avatar_url)}}"
-                                            alt="User Avatar"
-                                            class="w-10 h-10 rounded-full object-cover"
-                                    />
-                                    <div>
-                                        <p class="font-semibold text-gray-800">{{ comment.user.name }}</p>
-                                        <p class="text-sm text-gray-500">{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</p>
-                                    </div>
-                                </div>
-                                <p class="text-gray-700">
-                                    {{ comment.content }}
-                                </p>
-                            </div>
-                        {% endfor %}
-                    {% else %}
-                        <p class="text-gray-500 italic">Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</p>
-                    {% endif %}
-
-                </div>
-            </section>
-        </section>
-
-        <!-- Sidebar -->
-        <aside
-                class="md:col-span-3 bg-white shadow-md p-6 rounded-lg sticky-sidebar"
+          {{ tag.name }}
+        </span>
+        {% endfor %}
+      </div>
+      <!-- Share Buttons -->
+      <div class="flex gap-4 mb-6">
+        <button
+          class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition duration-300"
+          onclick="sharePost('https://myblog.com/post/hanoi')"
         >
-            <div class="mb-6">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Danh Mục</h3>
-                <ul class="space-y-2 text-base">
-                    {% for category in categories %}
-                        <li>
-                            <a href="/danhmuc/{{ category.slug }}"
-                               class="flex items-center px-3 py-2 rounded-md transition hover:bg-gray-100 text-gray-700">
-                        <span class="mr-3">
-                        {% if category.name == "Công nghệ" %}🤖
-                        {% elif category.name == "Lập trình" %}🧑‍💻
-                        {% elif category.name == "Thể thao" %}🏅
-                        {% elif category.name == "Du lịch" %}✈️
-                        {% elif category.name == "Ẩm thực" %}🍴
-                        {% elif category.name == "Giải trí" %}🎮
-                        {% elif category.name == "Văn hóa" %}📚
-                        {% elif category.name == "Âm nhạc" %}🎵
-                        {% else %}📁
-                        {% endif %}
-
-
-                        </span>
-                                {{ category.name }}
-                            </a>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+            <path
+              d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"
+            />
+          </svg>
+          Chia Sẻ
+        </button>
+        <button
+          class="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300 transition duration-300"
+          onclick="scrollToComments()"
+        >
+          <svg
+            class="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+            />
+          </svg>
+          Bình Luận
+        </button>
+      </div>
+    </div>
+    <!-- Comments Section -->
+    <section id="comments" class="mt-8">
+      <h2 class="text-2xl font-bold text-gray-800 mb-4">Bình Luận</h2>
+      <div id="comment-form" class="mb-6">
+        <textarea
+          id="comment-content"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 mb-4"
+          placeholder="Viết bình luận của bạn..."
+          rows="4"
+          required
+        ></textarea>
+        <input
+          type="hidden"
+          id="post-id"
+          name="post_id"
+          value="{{ baiviet.id }}"
+        />
+        <input
+          type="hidden"
+          id="user-id"
+          name="user_id"
+          value="{{ baiviet.user.id }}"
+        />
+        <button
+          type="button"
+          id="submitComment"
+          class="px-4 py-2 bg-blue-700 text-white rounded-full hover:bg-blue-800 transition duration-300"
+        >
+          Gửi Bình Luận
+        </button>
+      </div>
+      <div class="space-y-6" id="comment-list">
+        {% if comments %} {% for comment in comments %}
+        <div class="comment p-4 bg-gray-50 rounded-lg mb-4">
+          <div class="flex items-center gap-3 mb-2">
+            <img
+              src="{{ url_for('static', filename= comment.user.avatar_url)}}"
+              alt="User Avatar"
+              class="w-10 h-10 rounded-full object-cover"
+            />
             <div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Bài Viết Liên Quan</h3>
-                <ul class="space-y-4">
-                    {% for post in related_posts %}
-                        <li>
-                            <a href="/danhmuc/{{ post.slug }}" class="flex items-center gap-3 hover:text-blue-700">
-                                <img
-                                        src="{{ url_for('static', filename=post.thumbnail_url) }}"
-                                        alt="{{ post.title }}"
-                                        class="w-16 h-16 object-cover rounded-md"
-                                        loading="lazy"
-                                />
-                                <div>
-                                    <p class="text-sm font-semibold text-gray-800">{{ post.title }}</p>
-                                    <p class="text-xs text-gray-500">
-                                        {{ post.created_at.strftime('%d/%m/%Y') if post.created_at else 'Chưa có ngày' }}
-                                    </p>
-                                </div>
-                            </a>
-                        </li>
-                    {% else %}
-                        <li>Không có bài viết liên quan.</li>
-                    {% endfor %}
-                </ul>
+              <p class="font-semibold text-gray-800">{{ comment.user.name }}</p>
+              <p class="text-sm text-gray-500">
+                {{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}
+              </p>
             </div>
+          </div>
+          <p class="text-gray-700">{{ comment.content }}</p>
+        </div>
+        {% endfor %} {% else %}
+        <p class="text-gray-500 italic">
+          Chưa có bình luận nào. Hãy là người đầu tiên bình luận!
+        </p>
+        {% endif %}
+      </div>
+    </section>
+  </section>
 
-        </aside>
-    </main>
+  <!-- Sidebar -->
+  <aside class="md:col-span-3 bg-white shadow-md p-6 rounded-lg sticky-sidebar">
+    <div class="mb-6">
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">Danh Mục</h3>
+      <ul class="space-y-2 text-base">
+        {% for category in categories %}
+        <li>
+          <a
+            href="/danhmuc/{{ category.slug }}"
+            class="flex items-center px-3 py-2 rounded-md transition hover:bg-gray-100 text-gray-700"
+          >
+            <span class="mr-3">
+              {% if category.name == "Công nghệ" %}🤖 {% elif category.name ==
+              "Lập trình" %}🧑‍💻 {% elif category.name == "Thể thao" %}🏅 {% elif
+              category.name == "Du lịch" %}✈️ {% elif category.name == "Ẩm thực"
+              %}🍴 {% elif category.name == "Giải trí" %}🎮 {% elif
+              category.name == "Văn hóa" %}📚 {% elif category.name == "Âm nhạc"
+              %}🎵 {% else %}📁 {% endif %}
+            </span>
+            {{ category.name }}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    <div>
+      <h3 class="text-lg font-semibold text-gray-800 mb-4">
+        Bài Viết Liên Quan
+      </h3>
+      <ul class="space-y-4">
+        {% for post in related_posts %}
+        <li>
+          <a
+            href="/baiviet/{{ post.slug }}"
+            class="flex items-center gap-3 hover:text-blue-700"
+          >
+            <img
+              src="{{ url_for('static', filename=post.thumbnail_url) }}"
+              alt="{{ post.title }}"
+              class="w-16 h-16 object-cover rounded-md"
+              loading="lazy"
+            />
+            <div>
+              <p class="text-sm font-semibold text-gray-800">
+                {{ post.title }}
+              </p>
+              <p class="text-xs text-gray-500">
+                {{ post.created_at.strftime('%d/%m/%Y') if post.created_at else
+                'Chưa có ngày' }}
+              </p>
+            </div>
+          </a>
+        </li>
+        {% else %}
+        <li>Không có bài viết liên quan.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </aside>
+</main>
 {% endblock %}
