@@ -77,8 +77,10 @@ class Category(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(50))
     slug = db.Column(db.String(100), unique=True, nullable=False)
+    status = db.Column(db.Boolean, default=True)  # Thêm cột status
 
     posts = db.relationship('PostCategory', backref='category', lazy=True)
+
 
 class Post(db.Model):
     __tablename__ = 'posts'
@@ -305,7 +307,6 @@ def reset_password():
     flash("Đặt lại mật khẩu thành công, bạn có thể đăng nhập lại.")
     return redirect(url_for('login'))
 
-
 @app.route("/dashboard")
 @admin_required
 def dashboard():
@@ -358,7 +359,6 @@ def delete_post(post_id):
     flash("Đã xóa bài viết thành công", "success")
     return redirect(url_for('posts'))
 
-
 @app.route('/admin/role/create', methods=['GET', 'POST'])
 @admin_required
 def create_role():
@@ -379,6 +379,71 @@ def create_role():
 
     return render_template('admin/form_role.html')
 
+@app.route('/admin/category/create', methods=['GET', 'POST'])
+@admin_required
+def create_category():
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        status = request.form.get('status')
+        status = True if status == '1' else False
+
+        if not name:
+            flash('Tên danh mục không được để trống.', 'danger')
+            return render_template('admin/form_category.html')
+
+        slug = slugify(name)
+        existing = Category.query.filter_by(slug=slug).first()
+        if existing:
+            flash('Slug đã tồn tại. Vui lòng chọn tên khác.', 'danger')
+            return render_template('admin/form_category.html')
+
+        new_category = Category(name=name, slug=slug, status=status)
+        db.session.add(new_category)
+        db.session.commit()
+
+        flash('Danh mục đã được tạo thành công!', 'success')
+        return redirect(url_for('manage_categories'))
+
+    return render_template('admin/form_category.html')
+
+@app.route('/admin/category/edit/<int:id>', methods=['GET', 'POST'])
+@admin_required
+def edit_category(id):
+    category = Category.query.get_or_404(id)
+
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        status = request.form.get('status')
+
+        if not name:
+            flash('Tên danh mục không được để trống.', 'danger')
+            return render_template('admin/editcategory.html', category=category)
+
+        category.name = name
+        category.slug = slugify(name)
+        category.status = True if status == '1' else False
+
+        db.session.commit()
+        flash('Danh mục đã được cập nhật.', 'success')
+        return redirect(url_for('manage_categories'))
+
+    return render_template('admin/editcategory.html', category=category)
+
+
+@app.route('/admin/category/delete/<int:id>', methods=['GET'])
+@admin_required
+def delete_category(id):
+    category = Category.query.get_or_404(id)
+
+    if not category.posts:
+        db.session.delete(category)
+        flash('Danh mục đã được xóa.', 'success')
+    else:
+        category.status = False
+        flash('Danh mục có bài viết, đã chuyển sang trạng thái không hoạt động.', 'warning')
+
+    db.session.commit()
+    return redirect(url_for('manage_categories'))
 
 @app.route("/posts")
 def posts():
@@ -571,21 +636,21 @@ def hub():
     check = protectedUrl()
     if check:
         return check
-    from sqlalchemy import and_
 
-    posts = Post.query.filter(
-        and_(
-            Post.status == 'published',
-            Post.deleted_at == None
-        )
+    posts = Post.query.join(PostCategory).join(Category).filter(
+        Post.status == 'published',
+        Post.deleted_at.is_(None),
+        Category.status.is_(True)
     ).order_by(Post.created_at.desc()).all()
+
+
     postsView = Post.query.filter(
-        and_(
-            Post.status == 'published',
-            Post.deleted_at == None
-        )
+        Post.status == 'published',
+        Post.deleted_at.is_(None)
     ).order_by(Post.view_count.desc()).limit(3).all()
-    return render_template("index.html" , posts=posts , postsView=postsView)
+
+    return render_template("index.html", posts=posts, postsView=postsView)
+
 
 @app.route('/danhmuc/<string:slug>')
 def category(slug):

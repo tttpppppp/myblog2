@@ -50,6 +50,7 @@
                 <th class="px-4 py-2 text-left font-medium">#</th>
                 <th class="px-4 py-2 text-left font-medium">Tên danh mục</th>
                 <th class="px-4 py-2 text-left font-medium">Slug</th>
+                <th class="px-4 py-2 text-left font-medium">Trạng thái</th>
                 <th class="px-4 py-2 text-center font-medium">Hành động</th>
             </tr>
             </thead>
@@ -59,6 +60,13 @@
                     <td class="px-4 py-2 text-gray-800">{{ cate.id }}</td>
                     <td class="px-4 py-2 text-gray-800">{{ cate.name }}</td>
                     <td class="px-4 py-2 text-gray-800">{{ cate.slug }}</td>
+                    <td class="px-4 py-2 text-gray-800">
+                        {% if cate.status %}
+                            <span class="text-green-600 font-semibold">Hoạt động</span>
+                        {% else %}
+                            <span class="text-red-600 font-semibold">Không hoạt động</span>
+                        {% endif %}
+                    </td>
                     <td class="px-4 py-2 text-center">
                         <a href="/admin/category/edit/{{ cate.id }}" class="text-blue-600 hover:underline">Sửa</a> |
                         <a href="/admin/category/delete/{{ cate.id }}"
