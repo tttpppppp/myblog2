@@ -61,6 +61,7 @@ class User(db.Model):
     verifications = db.relationship("Verification", back_populates="user")
     khamphas = db.relationship('KhamPha', backref='user', cascade="all, delete", passive_deletes=True)
     role = db.relationship('Role', back_populates='users')
+    histories = db.relationship('History', back_populates='user')
 
 class Role(db.Model):
     __tablename__ = 'roles'
@@ -109,6 +110,7 @@ class Post(db.Model):
         lazy=True
     )
     notifications = db.relationship('Notification', back_populates='post')
+    histories = db.relationship('History', back_populates='post')
 
 class PostCategory(db.Model):
     __tablename__ = 'post_categories'
@@ -194,6 +196,17 @@ class Verification(db.Model):
 class Visit(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     count = db.Column(db.Integer, default=0)
+    
+class History(db.Model):
+    __tablename__ = 'history'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
+    post_id = db.Column(db.Integer, db.ForeignKey('posts.id', ondelete='CASCADE'), nullable=True)
+    viewed_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', back_populates='histories')
+    post = db.relationship('Post', back_populates='histories')
 
 @app.before_request
 def count_visit():
@@ -708,11 +721,25 @@ def post(slug):
         viewed_posts.append(baiviet.id)
         session['viewed_posts'] = viewed_posts
 
+    user_id = session.get("user")["id"]
+    if user_id:
+        existing_history = History.query.filter_by(
+            user_id=user_id,
+            post_id=baiviet.id
+        ).first()
+
+        if not existing_history:
+            history = History(user_id=user_id, post_id=baiviet.id)
+            db.session.add(history)
+            db.session.commit()
+
     return render_template("detail.html",
                            baiviet=baiviet,
                            created_at_vn=created_at_vn,
                            related_posts=related_posts,
-                           comments=comments , tags=tags,request=request)
+                           comments=comments,
+                           tags=tags,
+                           request=request)
 
 @app.route('/taobaiviet', methods=['GET', 'POST'])
 def createPost():
@@ -1046,9 +1073,20 @@ def taokhampha():
 
 @app.route("/kham-pha", methods=['GET'])
 def khampha_list():
-    # Lấy tất cả khám phá trong db
     khampha_all = KhamPha.query.order_by(KhamPha.created_at.desc()).all()
     return render_template("khampha_list.html", khamphas=khampha_all)
+
+@app.route("/history", methods=['GET'])
+def history():
+    check = protectedUrl()
+    if check:
+        return check
+    user_id = session.get('user').get('id')
+    history_posts = db.session.query(Post).join(History, Post.id == History.post_id) \
+        .filter(History.user_id == user_id).all()
+    print(history_posts)
+    return render_template("history.html" , historylist=history_posts)
+
 
 @app.errorhandler(404)
 def page_not_found(e):
