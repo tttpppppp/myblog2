@@ -757,17 +757,19 @@ def post(slug):
         viewed_posts.append(baiviet.id)
         session['viewed_posts'] = viewed_posts
 
-    user_id = session.get("user")["id"]
-    if user_id:
+    user = session.get("user")
+    if user:
+        user_id = user.get("id")
+    if user_id and baiviet:
         existing_history = History.query.filter_by(
             user_id=user_id,
             post_id=baiviet.id
         ).first()
-
         if not existing_history:
             history = History(user_id=user_id, post_id=baiviet.id)
             db.session.add(history)
             db.session.commit()
+
 
     return render_template("detail.html",
                            baiviet=baiviet,
