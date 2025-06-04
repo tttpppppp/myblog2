@@ -610,11 +610,48 @@ def register():
     if password != confirm_password:
         return render_template("register.html", message="Mật khẩu không khớp")
 
-    if User.query.filter_by(email=email).first():
-        return render_template("register.html", message="Email đã được sử dụng")
+    existing_user = User.query.filter_by(email=email).first()
 
+    if existing_user:
+        if existing_user.status == "inactive":
+            code = str(uuid.uuid4())
+            expiry_time = datetime.utcnow() + timedelta(minutes=15)
+
+            veri = Verification(code=code, expiry=expiry_time, user_id=existing_user.id)
+            db.session.add(veri)
+            db.session.commit()
+
+            reset_link = url_for("confirmRegister", code=code, _external=True)
+
+            subject = "MyBlog - Xác thực lại tài khoản"
+            body = f"""
+            Xin chào {existing_user.name},
+
+            Bạn đã đăng ký tài khoản nhưng chưa xác thực. Vui lòng nhấp vào liên kết bên dưới để xác thực tài khoản:
+
+            {reset_link}
+
+            Trân trọng,
+            Ban quản trị MyBlog
+            """
+            is_success = sendMail(body, subject, existing_user.email)
+            if is_success:
+                return render_template("register.html", message="Chúng tôi đã gửi lại liên kết xác thực đến email của bạn")
+            else:
+                return render_template("register.html", message="Gửi xác thực thất bại, vui lòng thử lại sau")
+        else:
+            return render_template("register.html", message="Email đã được sử dụng")
+
+    # Tạo mới user
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
-    user = User(name=name, email=email, password=hashed_password, mobile=mobile, avatar_url=image , role_id = 2)
+    user = User(
+        name=name,
+        email=email,
+        password=hashed_password,
+        mobile=mobile,
+        avatar_url=image,
+        role_id=2,
+    )
 
     try:
         db.session.add(user)
@@ -623,7 +660,7 @@ def register():
         code = str(uuid.uuid4())
         expiry_time = datetime.utcnow() + timedelta(minutes=15)
 
-        veri = Verification(code=code, expiry=expiry_time , user_id=user.id)
+        veri = Verification(code=code, expiry=expiry_time, user_id=user.id)
         db.session.add(veri)
         db.session.commit()
 
@@ -633,15 +670,15 @@ def register():
         body = f"""
         Xin chào {user.name},
 
-        Vui lòng nhấp vào liên kết bên dưới để đặt xác thực tài khoản.
+        Vui lòng nhấp vào liên kết bên dưới để xác thực tài khoản:
 
         {reset_link}
-
 
         Trân trọng,
         Ban quản trị MyBlog
         """
-        is_success = sendMail(body , subject, user.email)
+
+        is_success = sendMail(body, subject, user.email)
         if is_success:
             return render_template("register.html", message="Chúng tôi đã gửi liên kết xác thực đến email của bạn")
         else:
@@ -649,8 +686,7 @@ def register():
 
     except IntegrityError:
         db.session.rollback()
-        return render_template("register.html", message="Email đã tồn tại")
-
+        return render_template("register.html", message="Đã có lỗi xảy ra, vui lòng thử lại sau.")
 @app.route('/tim-kiem')
 def tim_kiem():
     keyword = request.args.get('keyword', '').strip()

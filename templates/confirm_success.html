@@ -1,34 +1,40 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Xác thực</title>
-    <link rel="icon" href="https://myblog2-400d.onrender.com/static/images/logoicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gray-100 min-h-screen flex items-center justify-center px-4">
-<div class="w-full max-w-md bg-white p-6 rounded-lg shadow text-center">
-    <h1 class="text-3xl font-bold text-gray-900 mb-6">My Blog</h1>
+<body class="bg-gradient-to-br from-blue-100 to-white min-h-screen flex items-center justify-center px-4">
 
-    {% with messages = get_flashed_messages() %}
+<div class="w-full max-w-md bg-white p-8 rounded-2xl shadow-lg text-center">
+    <h1 class="text-3xl font-extrabold text-blue-700">My Blog</h1>
+    <p class="text-sm text-gray-500 mt-1 mb-6">Xác thực tài khoản của bạn</p>
+
+    <div class="text-center mb-6">
+        <h2 class="text-lg font-semibold text-gray-700">👋 Chào mừng bạn đến với My Blog!</h2>
+        <p class="text-sm text-gray-600 mt-1">
+            Cảm ơn bạn đã đăng ký. Vui lòng xác thực email để kích hoạt tài khoản và bắt đầu hành trình viết blog cùng cộng đồng nhé!
+        </p>
+    </div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            <div class="flex items-start bg-red-50 border border-red-200 text-red-800 p-4 rounded mb-6">
-                <svg class="w-5 h-5 mt-1 mr-2 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2"
-                     viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                          d="M18.364 5.636l-12.728 12.728M5.636 5.636l12.728 12.728"/>
-                </svg>
-                <div class="text-left space-y-1 text-sm">
-                    {% for message in messages %}
-                        <p>{{ message }}</p>
-                    {% endfor %}
+            {% for category, message in messages %}
+                <div class="bg-green-100 border border-green-300 text-green-800 rounded-lg px-4 py-3 mb-6 flex items-start space-x-3">
+                    <svg class="w-5 h-5 mt-1 flex-shrink-0 text-green-600" fill="none" stroke="currentColor" stroke-width="2"
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <p class="text-sm">{{ message }}</p>
                 </div>
-            </div>
+            {% endfor %}
         {% endif %}
     {% endwith %}
 
-    <a href="#" class="text-blue-600 hover:underline text-sm">← Quay lại đăng nhập</a>
+    <a href="/" class="text-blue-600 hover:underline text-sm block mt-4">← Quay lại trang đăng nhập</a>
 </div>
+
 </body>
 </html>
