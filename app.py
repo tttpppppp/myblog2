@@ -621,7 +621,8 @@ def register():
             db.session.add(veri)
             db.session.commit()
 
-            reset_link = url_for("confirmRegister", code=code, _external=True)
+           reset_link = url_for("confirmRegister", code=code, _external=True, _scheme='https')
+
 
             subject = "MyBlog - Xác thực lại tài khoản"
             body = f"""
