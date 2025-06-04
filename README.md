@@ -33,7 +33,6 @@ Một nền tảng blog cá nhân được xây dựng bằng **Flask**, sử d�
 - 📁 Quản lý danh mục (category)
 - 🏷️ Hệ thống thẻ (tags) đa dạng
 - 🔔 Thông báo người dùng (notifications)
-- 🧠 Tự động tạo danh mục mặc định nếu chưa có
 - 🔒 Kiểm tra session để bảo vệ URL yêu cầu đăng nhập
 - 🕒 Quản lý trạng thái bài viết: Nháp, Đã xuất bản, Đã lưu trữ
 - 🧑‍🤝‍🧑 Giao tiếp người dùng (tin nhắn) - qua `SocketIO`
