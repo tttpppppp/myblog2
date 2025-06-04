@@ -758,17 +758,18 @@ def post(slug):
         session['viewed_posts'] = viewed_posts
 
     user = session.get("user")
-    if user:
+    if user and baiviet:
         user_id = user.get("id")
-    if user_id and baiviet:
-        existing_history = History.query.filter_by(
-            user_id=user_id,
-            post_id=baiviet.id
-        ).first()
-        if not existing_history:
-            history = History(user_id=user_id, post_id=baiviet.id)
-            db.session.add(history)
-            db.session.commit()
+        if user_id:
+            existing_history = History.query.filter_by(
+                user_id=user_id,
+                post_id=baiviet.id
+            ).first()
+            if not existing_history:
+                history = History(user_id=user_id, post_id=baiviet.id)
+                db.session.add(history)
+                db.session.commit()
+
 
 
     return render_template("detail.html",
