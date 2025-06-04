@@ -510,8 +510,7 @@ def forgot_password():
     db.session.add(veri)
     db.session.commit()
 
-
-    reset_link = url_for("reset_password", code=code, _external=True)
+    reset_link = url_for("reset_password", code=code, _external=True, _scheme='https')
 
     subject = "MyBlog - Cập nhật lại mật khẩu"
     body = f"""
